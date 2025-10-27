@@ -46,18 +46,18 @@ def create_user_view(page: ft.Page, api, user, on_logout):
             title=ft.Text("👤 Profil Użytkownika"),
             actions=[
                 ft.IconButton(
-                    ft.icons.LOGOUT,
+                    ft.Icons.LOGOUT,
                     on_click=lambda e: on_logout(),
                     tooltip="Wyloguj"
                 )
             ],
-            bgcolor=ft.colors.BLUE
+            bgcolor=ft.Colors.BLUE
         ),
         
         ft.Container(
             content=ft.Column([
                 # Avatar
-                ft.Icon(ft.icons.ACCOUNT_CIRCLE, size=100, color=ft.colors.BLUE),
+                ft.Icon(ft.Icons.ACCOUNT_CIRCLE, size=100, color=ft.colors.BLUE),
                 
                 # User info
                 ft.Text(user["username"], size=28, weight=ft.FontWeight.BOLD),
@@ -70,12 +70,12 @@ def create_user_view(page: ft.Page, api, user, on_logout):
                     # Total tasks
                     ft.Container(
                         content=ft.Column([
-                            ft.Icon(ft.icons.TASK, size=40, color=ft.colors.BLUE),
+                            ft.Icon(ft.Icons.TASK, size=40, color=ft.Colors.BLUE),
                             total_tasks,
-                            ft.Text("Wszystkie", size=12, color=ft.colors.GREY)
+                            ft.Text("Wszystkie", size=12, color=ft.Colors.GREY)
                         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
                         padding=20,
-                        bgcolor=ft.colors.BLUE_50,
+                        bgcolor=ft.Colors.BLUE_50,
                         border_radius=10,
                         expand=True
                     ),
@@ -83,12 +83,12 @@ def create_user_view(page: ft.Page, api, user, on_logout):
                     # Completed
                     ft.Container(
                         content=ft.Column([
-                            ft.Icon(ft.icons.CHECK_CIRCLE, size=40, color=ft.colors.GREEN),
+                            ft.Icon(ft.Icons.CHECK_CIRCLE, size=40, color=ft.Colors.GREEN),
                             completed_tasks,
-                            ft.Text("Ukończone", size=12, color=ft.colors.GREY)
+                            ft.Text("Ukończone", size=12, color=ft.Colors.GREY)
                         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
                         padding=20,
-                        bgcolor=ft.colors.GREEN_50,
+                        bgcolor=ft.Colors.GREEN_50,
                         border_radius=10,
                         expand=True
                     ),
@@ -96,12 +96,12 @@ def create_user_view(page: ft.Page, api, user, on_logout):
                     # Pending
                     ft.Container(
                         content=ft.Column([
-                            ft.Icon(ft.icons.PENDING, size=40, color=ft.colors.ORANGE),
+                            ft.Icon(ft.Icons.PENDING, size=40, color=ft.Colors.ORANGE),
                             pending_tasks,
-                            ft.Text("Do zrobienia", size=12, color=ft.colors.GREY)
+                            ft.Text("Do zrobienia", size=12, color=ft.Colors.GREY)
                         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
                         padding=20,
-                        bgcolor=ft.colors.ORANGE_50,
+                        bgcolor=ft.Colors.ORANGE_50,
                         border_radius=10,
                         expand=True
                     ),

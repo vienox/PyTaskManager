@@ -19,38 +19,61 @@ def main(page: ft.Page):
     
     def show_login():
         """Pokaż ekran logowania"""
+        print("🔹 Pokazuję login")  # ✅ Debug
         page.controls.clear()
         
         def on_login_success(user):
             nonlocal current_user
             current_user = user
+            print(f"✅ Zalogowano: {user}")  # ✅ Debug
             
             # Routing w zależności od roli
             if user["is_admin"]:
+                print("🛡️ Przechodzę do panelu admina")  # ✅ Debug
                 show_admin()
             else:
-                show_user_profile()  # Najpierw profil, potem może przejść do tasków
+                print("👤 Przechodzę do profilu użytkownika")  # ✅ Debug
+                show_user_profile()
         
         page.add(create_login_view(page, api, on_login_success))
         page.update()
     
     def show_user_profile():
         """Widok profilu użytkownika (dashboard ze statystykami)"""
+        print("🔹 Pokazuję profil użytkownika")  # ✅ Debug
         page.controls.clear()
-        page.add(create_user_view(page, api, current_user, on_logout=show_login))
-        page.update()
+        try:
+            page.add(create_user_view(page, api, current_user, on_logout=show_login))
+            page.update()
+        except Exception as e:
+            print(f"❌ Błąd w user_view: {e}")  # ✅ Debug
+            import traceback
+            traceback.print_exc()
     
     def show_tasks():
         """Widok tasków dla zwykłego usera"""
+        print("🔹 Pokazuję taski")  # ✅ Debug
         page.controls.clear()
-        page.add(create_tasks_view(page, api, current_user, on_logout=show_login))
-        page.update()
+        try:
+            page.add(create_tasks_view(page, api, current_user, on_logout=show_login))
+            page.update()
+        except Exception as e:
+            print(f"❌ Błąd w tasks_view: {e}")  # ✅ Debug
+            import traceback
+            traceback.print_exc()
     
     def show_admin():
         """Panel admina"""
+        print("🔹 Pokazuję panel admina")  # ✅ Debug
         page.controls.clear()
-        page.add(create_admin_view(page, api, current_user, on_logout=show_login))
-        page.update()
+        try:
+            page.add(create_admin_view(page, api, current_user, on_logout=show_login))
+            page.update()
+            print("✅ Panel admina załadowany")  # ✅ Debug
+        except Exception as e:
+            print(f"❌ Błąd w admin_view: {e}")  # ✅ Debug
+            import traceback
+            traceback.print_exc()
     
     # Start - pokaż login
     show_login()

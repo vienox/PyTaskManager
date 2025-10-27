@@ -9,14 +9,14 @@ def create_first_admin():
         # Sprawdź czy admin już istnieje
         existing = session.exec(select(User).where(User.username == "admin")).first()
         if existing:
-            print("❌ Admin już istnieje!")
+            print("⚠️ Admin już istnieje!")
             return
         
-        # Stwórz admina
+        # Utwórz admina
         admin = User(
             username="admin",
             email="admin@example.com",
-            hashed_password=hash_password("admin123"),  # ZMIEŃ HASŁO!
+            hashed_password=hash_password("admin123"),
             is_admin=True
         )
         session.add(admin)
@@ -24,7 +24,6 @@ def create_first_admin():
         print("✅ Admin utworzony!")
         print("   Username: admin")
         print("   Password: admin123")
-        print("   ⚠️  ZMIEŃ HASŁO po pierwszym logowaniu!")
 
 if __name__ == "__main__":
     create_first_admin()

@@ -15,14 +15,14 @@ def create_login_view(page: ft.Page, api, on_login_success):
         label="Username",
         width=300,
         autofocus=True,
-        prefix_icon=ft.icons.PERSON
+        prefix_icon=ft.Icons.PERSON
     )
     
     password_field = ft.TextField(
         label="Password",
         password=True,
         width=300,
-        prefix_icon=ft.icons.LOCK,
+        prefix_icon=ft.Icons.LOCK,
         can_reveal_password=True
     )
     
@@ -66,7 +66,7 @@ def create_login_view(page: ft.Page, api, on_login_success):
     return ft.Container(
         content=ft.Column([
             ft.Container(height=50),  # spacer
-            ft.Icon(ft.icons.TASK_ALT, size=80, color=ft.colors.BLUE),
+            ft.Icon(ft.Icons.TASK_ALT, size=80, color=ft.Colors.BLUE),
             ft.Text(
                 "Task Manager",
                 size=32,
@@ -76,7 +76,7 @@ def create_login_view(page: ft.Page, api, on_login_success):
             ft.Text(
                 "Zaloguj się aby kontynuować",
                 size=14,
-                color=ft.colors.GREY,
+                color=ft.Colors.GREY,
                 text_align=ft.TextAlign.CENTER
             ),
             ft.Container(height=30),

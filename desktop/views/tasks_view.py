@@ -14,7 +14,7 @@ def create_tasks_view(page: ft.Page, api, user, on_logout):
     task_list = ft.Column(scroll=ft.ScrollMode.AUTO, expand=True, spacing=10)
     empty_state = ft.Container(
         content=ft.Column([
-            ft.Icon(ft.icons.INBOX, size=100, color=ft.colors.GREY_400),
+            ft.Icon(ft.Icons.INBOX, size=100, color=ft.colors.GREY_400),
             ft.Text("Brak tasków", size=20, color=ft.colors.GREY),
             ft.Text("Kliknij + aby dodać pierwszy task", size=14, color=ft.colors.GREY)
         ],
@@ -90,13 +90,13 @@ def create_tasks_view(page: ft.Page, api, user, on_logout):
                         ) if task.get("description") else None
                     ], expand=True, spacing=5),
                     ft.IconButton(
-                        ft.icons.EDIT,
+                        ft.Icons.EDIT,
                         on_click=edit_click,
                         icon_color=ft.colors.BLUE,
                         tooltip="Edytuj"
                     ),
                     ft.IconButton(
-                        ft.icons.DELETE,
+                        ft.Icons.DELETE,
                         on_click=delete_click,
                         icon_color=ft.colors.RED,
                         tooltip="Usuń"
@@ -209,7 +209,7 @@ def create_tasks_view(page: ft.Page, api, user, on_logout):
             expand=True
         ),
         ft.FloatingActionButton(
-            icon=ft.icons.ADD,
+            icon=ft.Icons.ADD,
             on_click=show_add_dialog,
             tooltip="Dodaj task"
         )

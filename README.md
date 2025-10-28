@@ -290,10 +290,3 @@ pip install -r requirements.txt --force-reinstall
 
 - **vienox** - *Initial work* - [GitHub](https://github.com/vienox)
 
-## 🙏 Acknowledgments
-
-- [Flet](https://flet.dev/) - For the amazing desktop framework
-- [Flask](https://flask.palletsprojects.com/) - For the lightweight web framework
-- [SQLModel](https://sqlmodel.tiangolo.com/) - For the elegant ORM
-
-

@@ -24,6 +24,7 @@ build/
 *.sqlite
 *.sqlite3
 taskmanager.db
+task.db
 
 # IDE
 .vscode/

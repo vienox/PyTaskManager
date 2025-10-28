@@ -3,12 +3,12 @@ from api_client import APIClient
 
 def create_login_view(page: ft.Page, api, on_login_success):
     """
-    Widok logowania
+    Create login view with authentication form.
     
     Args:
-        page: Flet Page
+        page: Flet Page instance
         api: APIClient instance
-        on_login_success: callback(user) - wywołany po udanym logowaniu
+        on_login_success: Callback function called with user data on successful login
     """
     
     username_field = ft.TextField(
@@ -30,44 +30,35 @@ def create_login_view(page: ft.Page, api, on_login_success):
     loading = ft.ProgressRing(visible=False, width=30, height=30)
     
     def login_click(e):
-        # Walidacja
         if not username_field.value or not password_field.value:
-            error_text.value = "⚠️ Wypełnij wszystkie pola"
+            error_text.value = "Please fill in all fields"
             page.update()
             return
         
-        # Pokaż loading
         loading.visible = True
         error_text.value = ""
         page.update()
         
         try:
-            # Logowanie przez API
             api.login(username_field.value, password_field.value)
-            
-            # Pobierz dane usera
             user = api.get_me()
-            
-            # Callback - przekaż dane usera
             on_login_success(user)
             
         except Exception as err:
             loading.visible = False
             error_msg = str(err)
             
-            # Szczegółowe komunikaty błędów
             if "404" in error_msg or "User not found" in error_msg:
-                error_text.value = f"❌ Nie znaleziono użytkownika '{username_field.value}'"
+                error_text.value = f"User '{username_field.value}' not found"
             elif "401" in error_msg or "Invalid password" in error_msg:
-                error_text.value = "❌ Nieprawidłowe hasło"
+                error_text.value = "Invalid password"
             elif "500" in error_msg:
-                error_text.value = "❌ Błąd serwera. Sprawdź czy backend działa."
+                error_text.value = "Server error. Please check if backend is running."
             else:
-                error_text.value = f"❌ Błąd logowania: {error_msg}"
+                error_text.value = f"Login error: {error_msg}"
             
             page.update()
     
-    # Enter key = login
     def on_key_press(e: ft.KeyboardEvent):
         if e.key == "Enter":
             login_click(None)
@@ -76,7 +67,7 @@ def create_login_view(page: ft.Page, api, on_login_success):
     
     return ft.Container(
         content=ft.Column([
-            ft.Container(height=50),  # spacer
+            ft.Container(height=50),
             ft.Icon(ft.Icons.TASK_ALT, size=80, color=ft.Colors.BLUE),
             ft.Text(
                 "Task Manager",
@@ -85,7 +76,7 @@ def create_login_view(page: ft.Page, api, on_login_success):
                 text_align=ft.TextAlign.CENTER
             ),
             ft.Text(
-                "Zaloguj się aby kontynuować",
+                "Log in to continue",
                 size=14,
                 color=ft.Colors.GREY,
                 text_align=ft.TextAlign.CENTER
@@ -95,7 +86,7 @@ def create_login_view(page: ft.Page, api, on_login_success):
             password_field,
             ft.Container(height=10),
             ft.ElevatedButton(
-                "Zaloguj",
+                "Log In",
                 on_click=login_click,
                 width=300,
                 height=45,

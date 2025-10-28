@@ -14,7 +14,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 def on_startup():
     init_db()
 
-# ---- helper: aktualny użytkownik z Bearer token ----
+# ---- helper: Bearer token ----
 def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)) -> User:
     username = decode_token(token)
     if not username:
@@ -24,7 +24,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Dep
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
-# ---- helper: tylko admin ----
+# ---- helper:admin ----
 def get_admin_user(current_user: User = Depends(get_current_user)) -> User:
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Admin only")
@@ -35,8 +35,7 @@ def health():
     return {"status": "ok"}
 
 # ---------------- AUTH ----------------
-# USUNIĘTE: publiczna rejestracja
-# Teraz tylko admin może dodawać userów (endpoint niżej)
+
 
 @app.post("/auth/token")
 def login(form: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
@@ -115,7 +114,7 @@ def create_user_admin(data: UserCreate, admin: User = Depends(get_admin_user), s
         username=data.username,
         email=data.email,
         hashed_password=hash_password(data.password),
-        is_admin=False  # nowy user domyślnie NIE admin
+        is_admin=False  
     )
     session.add(user)
     session.commit()
@@ -134,8 +133,6 @@ def get_all_tasks(admin: User = Depends(get_admin_user), session: Session = Depe
 
 @app.post("/admin/tasks", response_model=Task, status_code=201)
 def create_task_admin(data: TaskCreate, owner_id: int, admin: User = Depends(get_admin_user), session: Session = Depends(get_session)):
-    """Admin tworzy task dla określonego użytkownika"""
-    # Sprawdź czy użytkownik istnieje
     owner = session.get(User, owner_id)
     if not owner:
         raise HTTPException(status_code=404, detail="User not found")
@@ -148,7 +145,6 @@ def create_task_admin(data: TaskCreate, owner_id: int, admin: User = Depends(get
 
 @app.put("/admin/tasks/{task_id}", response_model=Task)
 def update_task_admin(task_id: int, data: TaskUpdate, admin: User = Depends(get_admin_user), session: Session = Depends(get_session)):
-    """Admin edytuje task dowolnego użytkownika"""
     task = session.get(Task, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -163,7 +159,6 @@ def update_task_admin(task_id: int, data: TaskUpdate, admin: User = Depends(get_
 
 @app.delete("/admin/tasks/{task_id}", status_code=204)
 def delete_task_admin(task_id: int, admin: User = Depends(get_admin_user), session: Session = Depends(get_session)):
-    """Admin usuwa task dowolnego użytkownika"""
     task = session.get(Task, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -186,7 +181,6 @@ def delete_user(user_id: int, admin: User = Depends(get_admin_user), session: Se
 
 @app.put("/admin/users/{user_id}/make-admin", response_model=UserRead)
 def make_admin(user_id: int, admin: User = Depends(get_admin_user), session: Session = Depends(get_session)):
-    """Admin może nadać uprawnienia admina innemu userowi"""
     user = session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

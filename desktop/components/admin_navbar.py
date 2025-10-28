@@ -3,36 +3,33 @@ import flet as ft
 
 def create_admin_navbar(page: ft.Page, user, on_logout, on_switch_users, on_switch_tasks):
     """
-    Navbar dla widoku admina z zakładkami użytkowników i tasków
+    Create navigation bar for admin view with user management and tasks tabs.
     
     Args:
-        page: Flet Page
-        user: dict z danymi użytkownika
-        on_logout: callback wylogowania
-        on_switch_users: callback przełączenia na użytkowników
-        on_switch_tasks: callback przełączenia na taski
+        page: Flet Page instance
+        user: Dictionary containing user data
+        on_logout: Callback function for logout action
+        on_switch_users: Callback function to switch to users view
+        on_switch_tasks: Callback function to switch to tasks view
         
     Returns:
-        Container z navbarem
+        Container widget with navigation bar
     """
     
     return ft.Container(
         content=ft.Row([
-            # Logo/Tytuł
             ft.Row([
                 ft.Icon(ft.Icons.ADMIN_PANEL_SETTINGS, color=ft.Colors.AMBER_200, size=28),
                 ft.Text(
-                    "Panel Administracyjny",
+                    "Administration Panel",
                     size=20,
                     weight=ft.FontWeight.BOLD,
                     color=ft.Colors.WHITE
                 )
             ], spacing=10),
             
-            # Spacer
             ft.Container(expand=True),
             
-            # User info + logout
             ft.Container(
                 content=ft.Row([
                     ft.Icon(ft.Icons.ADMIN_PANEL_SETTINGS, color=ft.Colors.AMBER_200, size=20),
@@ -44,7 +41,7 @@ def create_admin_navbar(page: ft.Page, user, on_logout, on_switch_users, on_swit
                     ft.IconButton(
                         icon=ft.Icons.LOGOUT,
                         icon_color=ft.Colors.WHITE,
-                        tooltip="Wyloguj",
+                        tooltip="Logout",
                         on_click=lambda e: on_logout()
                     )
                 ], spacing=10),
@@ -59,26 +56,26 @@ def create_admin_navbar(page: ft.Page, user, on_logout, on_switch_users, on_swit
 
 def create_admin_tabs(on_switch_users, on_switch_tasks, current_view="users"):
     """
-    Zakładki przełączania widoków w panelu admina
+    Create tab buttons for switching between admin panel views.
     
     Args:
-        on_switch_users: callback przełączenia na użytkowników
-        on_switch_tasks: callback przełączenia na taski
-        current_view: aktualny widok ("users" lub "tasks")
+        on_switch_users: Callback function to switch to users view
+        on_switch_tasks: Callback function to switch to tasks view
+        current_view: Current active view ("users" or "tasks")
         
     Returns:
-        tuple: (container_widget, users_button_ref, tasks_button_ref)
+        Tuple of (container_widget, users_button_ref, tasks_button_ref)
     """
     
     users_btn = ft.ElevatedButton(
-        "Użytkownicy",
+        "Users",
         icon=ft.Icons.PEOPLE,
         on_click=on_switch_users,
         bgcolor=ft.Colors.BLUE_700 if current_view == "users" else None
     )
     
     tasks_btn = ft.ElevatedButton(
-        "Wszystkie Taski",
+        "All Tasks",
         icon=ft.Icons.TASK,
         on_click=on_switch_tasks,
         bgcolor=ft.Colors.BLUE_700 if current_view == "tasks" else None

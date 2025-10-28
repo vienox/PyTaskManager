@@ -6,6 +6,7 @@ from views.tasks_view import create_tasks_view
 from views.admin_view import create_admin_view
 
 def main(page: ft.Page):
+    """Main application entry point."""
     page.title = "Task Manager"
     page.window_width = 900
     page.window_height = 700
@@ -18,6 +19,7 @@ def main(page: ft.Page):
     current_user = None
     
     def show_login():
+        """Display login view."""
         page.controls.clear()
         
         def on_login_success(user):
@@ -32,7 +34,7 @@ def main(page: ft.Page):
         page.update()
     
     def show_user_profile():
-        """Widok profilu użytkownika (dashboard ze statystykami)"""
+        """Display user profile view with statistics dashboard."""
         page.controls.clear()
         try:
             page.add(create_user_view(page, api, current_user, on_logout=show_login))
@@ -42,7 +44,7 @@ def main(page: ft.Page):
             traceback.print_exc()
     
     def show_tasks():
-        """Widok tasków dla zwykłego usera"""
+        """Display tasks view for regular user."""
         page.controls.clear()
         try:
             page.add(create_tasks_view(page, api, current_user, on_logout=show_login, on_back_to_profile=show_user_profile))
@@ -52,7 +54,7 @@ def main(page: ft.Page):
             traceback.print_exc()
     
     def show_admin():
-        """Panel admina"""
+        """Display admin panel."""
         page.controls.clear()
         try:
             page.add(create_admin_view(page, api, current_user, on_logout=show_login))
@@ -61,7 +63,7 @@ def main(page: ft.Page):
             import traceback
             traceback.print_exc()
     
-    # Start - pokaż login
+    # Initialize application with login view
     show_login()
 
 if __name__ == "__main__":

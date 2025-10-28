@@ -3,14 +3,14 @@ import flet as ft
 
 def create_user_stats(page: ft.Page, api):
     """
-    Komponent wyświetlający statystyki użytkownika
+    Create user statistics display component.
     
     Args:
-        page: Flet Page
+        page: Flet Page instance
         api: APIClient instance
         
     Returns:
-        tuple: (widget, load_stats_callback)
+        Tuple of (widget, load_stats_callback)
     """
     
     total_tasks = ft.Text("0", size=32, weight=ft.FontWeight.BOLD)
@@ -18,7 +18,7 @@ def create_user_stats(page: ft.Page, api):
     pending_tasks = ft.Text("0", size=32, weight=ft.FontWeight.BOLD, color=ft.Colors.ORANGE)
     
     def load_stats():
-        """Oblicz statystyki tasków"""
+        """Calculate and display task statistics."""
         try:
             tasks = api.get_tasks()
             total = len(tasks)
@@ -31,16 +31,14 @@ def create_user_stats(page: ft.Page, api):
             
             page.update()
         except Exception as e:
-            print(f"Błąd stats: {e}")
+            print(f"Stats error: {e}")
     
-    # Widget statystyk
     widget = ft.Row([
-        # Total tasks
         ft.Container(
             content=ft.Column([
                 ft.Icon(ft.Icons.TASK, size=40, color=ft.Colors.BLUE),
                 total_tasks,
-                ft.Text("Wszystkie", size=12, color=ft.Colors.GREY)
+                ft.Text("Total", size=12, color=ft.Colors.GREY)
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
             padding=20,
             bgcolor=ft.Colors.BLUE_50,
@@ -48,12 +46,11 @@ def create_user_stats(page: ft.Page, api):
             expand=True
         ),
         
-        # Completed
         ft.Container(
             content=ft.Column([
                 ft.Icon(ft.Icons.CHECK_CIRCLE, size=40, color=ft.Colors.GREEN),
                 completed_tasks,
-                ft.Text("Ukończone", size=12, color=ft.Colors.GREY)
+                ft.Text("Completed", size=12, color=ft.Colors.GREY)
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
             padding=20,
             bgcolor=ft.Colors.GREEN_50,
@@ -61,12 +58,11 @@ def create_user_stats(page: ft.Page, api):
             expand=True
         ),
         
-        # Pending
         ft.Container(
             content=ft.Column([
                 ft.Icon(ft.Icons.PENDING, size=40, color=ft.Colors.ORANGE),
                 pending_tasks,
-                ft.Text("Do zrobienia", size=12, color=ft.Colors.GREY)
+                ft.Text("Pending", size=12, color=ft.Colors.GREY)
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
             padding=20,
             bgcolor=ft.Colors.ORANGE_50,

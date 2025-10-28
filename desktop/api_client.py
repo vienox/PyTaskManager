@@ -54,7 +54,7 @@ class APIClient:
         r = requests.delete(f"{self.base_url}/tasks/{task_id}", headers=headers)
         r.raise_for_status()
     
-    # ============ ADMIN ENDPOINTS ============
+    # Admin endpoints
     def create_user(self, username: str, email: str, password: str):
         headers = {"Authorization": f"Bearer {self.token}"}
         data = {"username": username, "email": email, "password": password}
@@ -85,9 +85,9 @@ class APIClient:
         r.raise_for_status()
         return r.json()
     
-    # ============ ADMIN TASK MANAGEMENT ============
+    # Admin task management
     def create_task_for_user(self, owner_id: int, title: str, description: str = "", completed: bool = False):
-        """Admin tworzy task dla określonego użytkownika"""
+        """Admin creates task for specific user"""
         headers = {"Authorization": f"Bearer {self.token}"}
         data = {"title": title, "description": description, "completed": completed}
         r = requests.post(f"{self.base_url}/admin/tasks?owner_id={owner_id}", json=data, headers=headers)
@@ -95,7 +95,7 @@ class APIClient:
         return r.json()
     
     def update_task_admin(self, task_id: int, title: str = None, description: str = None, completed: bool = None):
-        """Admin edytuje task dowolnego użytkownika"""
+        """Admin edits task of any user"""
         headers = {"Authorization": f"Bearer {self.token}"}
         data = {}
         if title is not None:
@@ -110,7 +110,7 @@ class APIClient:
         return r.json()
     
     def delete_task_admin(self, task_id: int):
-        """Admin usuwa task dowolnego użytkownika"""
+        """Admin deletes task of any user"""
         headers = {"Authorization": f"Bearer {self.token}"}
         r = requests.delete(f"{self.base_url}/admin/tasks/{task_id}", headers=headers)
         r.raise_for_status()

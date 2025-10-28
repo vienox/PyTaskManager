@@ -3,57 +3,50 @@ from components.user_task_manager import create_user_task_manager
 
 def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=None):
     """
-    Widok tasków dla zwykłego usera
+    Create tasks view for regular user.
     
     Args:
-        page: Flet Page
+        page: Flet Page instance
         api: APIClient instance
-        user: dict z danymi usera (username, email, is_admin)
-        on_logout: callback - wywołany po kliknięciu logout
-        on_back_to_profile: callback - powrót do profilu użytkownika
+        user: Dictionary containing user data (username, email, is_admin)
+        on_logout: Callback function for logout action
+        on_back_to_profile: Callback function to return to user profile
     """
     
-    # Komponent zarządzania taskami
     tasks_widget, load_tasks_callback = create_user_task_manager(page, api)
     
-    # ========== NAVBAR ==========
     navbar_actions = []
     
-    # Przycisk powrotu do profilu (jeśli callback istnieje)
     if on_back_to_profile:
         navbar_actions.append(
             ft.IconButton(
                 icon=ft.Icons.HOME,
                 icon_color=ft.Colors.WHITE,
-                tooltip="Powrót do profilu",
+                tooltip="Back to Profile",
                 on_click=lambda e: on_back_to_profile()
             )
         )
     
-    # User info + logout
     navbar_actions.extend([
         ft.Icon(ft.Icons.PERSON, color=ft.Colors.WHITE, size=20),
         ft.Text(user['username'], color=ft.Colors.WHITE, weight=ft.FontWeight.W_500),
         ft.IconButton(
             icon=ft.Icons.LOGOUT,
             icon_color=ft.Colors.WHITE,
-            tooltip="Wyloguj",
+            tooltip="Logout",
             on_click=lambda e: on_logout()
         )
     ])
     
     navbar = ft.Container(
         content=ft.Row([
-            # Tytuł
             ft.Row([
                 ft.Icon(ft.Icons.TASK_ALT, color=ft.Colors.WHITE, size=28),
-                ft.Text("Moje Taski", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE)
+                ft.Text("My Tasks", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE)
             ], spacing=10),
             
-            # Spacer
             ft.Container(expand=True),
             
-            # Actions (back + user info + logout)
             ft.Row(navbar_actions, spacing=10)
         ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
         padding=15,
@@ -61,7 +54,6 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
         border_radius=ft.border_radius.only(bottom_left=10, bottom_right=10)
     )
     
-    # ========== GŁÓWNY WIDOK ==========
     view = ft.Column([
         navbar,
         ft.Container(
@@ -71,7 +63,6 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
         )
     ], expand=True, spacing=0)
     
-    # Załaduj taski na start
     load_tasks_callback()
     
     return view

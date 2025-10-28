@@ -7,7 +7,7 @@ class User(SQLModel, table=True):
     username: str = Field(unique=True, index=True)
     email: str = Field(unique=True, index=True)
     hashed_password: str
-    is_admin: bool = False  # DODANE - rola
+    is_admin: bool = False  
 
 class UserCreate(SQLModel):
     username: str
@@ -18,7 +18,7 @@ class UserRead(SQLModel):
     id: int
     username: str
     email: str
-    is_admin: bool  # DODANE
+    is_admin: bool  
 
 # --- Task models ---
 class TaskBase(SQLModel):

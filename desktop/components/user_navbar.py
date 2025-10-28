@@ -3,38 +3,35 @@ import flet as ft
 
 def create_user_navbar(page: ft.Page, user, on_logout):
     """
-    Navbar dla zwykłego użytkownika
+    Create navigation bar for regular user view.
     
     Args:
-        page: Flet Page
-        user: dict z danymi użytkownika
-        on_logout: callback wylogowania
+        page: Flet Page instance
+        user: Dictionary containing user data
+        on_logout: Callback function for logout action
         
     Returns:
-        Container z navbarem
+        Container widget with navigation bar
     """
     
     return ft.Container(
         content=ft.Row([
-            # Tytuł
             ft.Row([
                 ft.Icon(ft.Icons.PERSON, color=ft.Colors.WHITE, size=28),
                 ft.Text(
-                    "Profil Użytkownika",
+                    "User Profile",
                     size=20,
                     weight=ft.FontWeight.BOLD,
                     color=ft.Colors.WHITE
                 )
             ], spacing=10),
             
-            # Spacer
             ft.Container(expand=True),
             
-            # Logout
             ft.IconButton(
                 icon=ft.Icons.LOGOUT,
                 icon_color=ft.Colors.WHITE,
-                tooltip="Wyloguj",
+                tooltip="Logout",
                 on_click=lambda e: on_logout()
             )
         ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),

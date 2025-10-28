@@ -4,25 +4,22 @@ from components.user_stats import create_user_stats
 
 def create_user_view(page: ft.Page, api, user, on_logout):
     """
-    Uproszczony widok dla zwykłego użytkownika
-    Wyświetla jego dane + podstawowe statystyki tasków
+    Create simplified user profile view with task statistics.
     
     Args:
-        page: Flet Page
+        page: Flet Page instance
         api: APIClient instance
-        user: dict z danymi usera
-        on_logout: callback wylogowania
+        user: Dictionary containing user data
+        on_logout: Callback function for logout action
     """
     
-    # Komponent statystyk
     stats_widget, load_stats_callback = create_user_stats(page, api)
     
     def go_to_tasks(e):
-        """Przejdź do widoku tasków"""
+        """Navigate to tasks view."""
         from views.tasks_view import create_tasks_view
         page.controls.clear()
         
-        # Funkcja powrotu do profilu
         def back_to_profile():
             page.controls.clear()
             page.add(create_user_view(page, api, user, on_logout))
@@ -31,8 +28,6 @@ def create_user_view(page: ft.Page, api, user, on_logout):
         page.add(create_tasks_view(page, api, user, on_logout, on_back_to_profile=back_to_profile))
         page.update()
     
-    # ========== MAIN VIEW ==========
-    # Navbar
     navbar = create_user_navbar(page, user, on_logout)
     
     view = ft.Column([
@@ -40,23 +35,19 @@ def create_user_view(page: ft.Page, api, user, on_logout):
         
         ft.Container(
             content=ft.Column([
-                # Avatar
                 ft.Icon(ft.Icons.ACCOUNT_CIRCLE, size=100, color=ft.Colors.BLUE),
                 
-                # User info
                 ft.Text(user["username"], size=28, weight=ft.FontWeight.BOLD),
                 ft.Text(user["email"], size=14, color=ft.Colors.GREY),
                 
                 ft.Divider(height=40),
                 
-                # Stats cards
                 stats_widget,
                 
                 ft.Container(height=30),
                 
-                # Action button
                 ft.ElevatedButton(
-                    "Zarządzaj Taskami",
+                    "Manage Tasks",
                     on_click=go_to_tasks,
                     width=300,
                     height=50,
@@ -72,7 +63,6 @@ def create_user_view(page: ft.Page, api, user, on_logout):
         )
     ], expand=True)
     
-    # Load stats
     load_stats_callback()
     
     return view

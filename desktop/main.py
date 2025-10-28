@@ -55,7 +55,7 @@ def main(page: ft.Page):
         print("🔹 Pokazuję taski")  # ✅ Debug
         page.controls.clear()
         try:
-            page.add(create_tasks_view(page, api, current_user, on_logout=show_login))
+            page.add(create_tasks_view(page, api, current_user, on_logout=show_login, on_back_to_profile=show_user_profile))
             page.update()
         except Exception as e:
             print(f"❌ Błąd w tasks_view: {e}")  # ✅ Debug

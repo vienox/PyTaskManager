@@ -15,8 +15,12 @@ def create_admin_task_manager(page: ft.Page, api):
         tuple: (widget, load_tasks_callback)
     """
     
-    tasks_list = ft.Column(scroll=ft.ScrollMode.ADAPTIVE, expand=True, spacing=10)
+    tasks_list = ft.Column(spacing=10, scroll=ft.ScrollMode.ALWAYS, expand=True)
     tasks_stats_text = ft.Text("", size=14, color=ft.Colors.GREY)
+    
+    # Wyszukiwanie
+    search_query = ft.Ref[str]()
+    search_query.current = ""
     
     # Filtrowanie
     all_tasks_cache = []
@@ -49,11 +53,23 @@ def create_admin_task_manager(page: ft.Page, api):
     error_text = ft.Text("", color=ft.Colors.RED, size=12)
     edit_error_text = ft.Text("", color=ft.Colors.RED, size=12)
     
+    # Wyszukiwanie użytkowników w dialogu
+    user_search_query = ft.Ref[str]()
+    user_search_query.current = ""
+    all_users_for_dropdown = []
+    
     # Lista użytkowników dla dropdowna
     users_dropdown = ft.Dropdown(
         label="Wybierz użytkownika *",
-        width=300,
+        width=400,
         hint_text="Wybierz z listy"
+    )
+    
+    user_search_field = ft.TextField(
+        hint_text="Szukaj użytkownika...",
+        prefix_icon=ft.Icons.SEARCH,
+        width=400,
+        on_change=lambda e: filter_users_dropdown(e.control.value)
     )
     
     # Walidacje
@@ -95,21 +111,39 @@ def create_admin_task_manager(page: ft.Page, api):
             page.update()
     
     def filter_tasks():
-        """Filtruje taski według wybranego użytkownika"""
+        """Filtruje taski według wybranego użytkownika i wyszukiwania"""
         tasks_list.controls.clear()
         
         # Pobierz wybrany user_id z dropdowna
         selected_user_id = filter_dropdown.value
         
+        # Filtruj po użytkowniku
         if selected_user_id and selected_user_id != "all":
-            # Filtruj taski dla konkretnego użytkownika
             filtered = [t for t in all_tasks_cache if str(t["owner_id"]) == selected_user_id]
         else:
-            # Pokaż wszystkie taski
             filtered = all_tasks_cache
         
+        # Filtruj po wyszukiwaniu
+        query = search_query.current.lower()
+        if query:
+            filtered = [t for t in filtered 
+                       if query in t["title"].lower() or 
+                          query in t.get("description", "").lower()]
+        
         if not filtered:
-            tasks_list.controls.append(create_empty_state())
+            if query:
+                tasks_list.controls.append(
+                    ft.Container(
+                        content=ft.Column([
+                            ft.Icon(ft.Icons.SEARCH_OFF, size=60, color=ft.Colors.GREY_400),
+                            ft.Text("Nie znaleziono pasujących tasków", color=ft.Colors.GREY_600)
+                        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+                        alignment=ft.alignment.center,
+                        padding=40
+                    )
+                )
+            else:
+                tasks_list.controls.append(create_empty_state())
         else:
             for task in filtered:
                 tasks_list.controls.append(create_editable_admin_task_card(task))
@@ -118,11 +152,16 @@ def create_admin_task_manager(page: ft.Page, api):
         total = len(all_tasks_cache)
         shown = len(filtered)
         if selected_user_id and selected_user_id != "all":
-            tasks_stats_text.value = f"📝 Wyświetlono: {shown} / {total} tasków"
+            tasks_stats_text.value = f"Wyświetlono: {shown} / {total} tasków"
         else:
-            tasks_stats_text.value = f"📝 Łącznie tasków: {total}"
+            tasks_stats_text.value = f"Łącznie tasków: {total}"
         
         page.update()
+    
+    def search_changed(e):
+        """Obsługa zmiany w polu wyszukiwania"""
+        search_query.current = e.control.value
+        filter_tasks()
     
     def load_users_filter():
         """Ładuje użytkowników do dropdowna filtrowania"""
@@ -152,14 +191,39 @@ def create_admin_task_manager(page: ft.Page, api):
         except Exception as e:
             print(f"❌ Błąd ładowania użytkowników do filtra: {e}")
     
+    def filter_users_dropdown(search_text):
+        """Filtruje użytkowników w dropdownie według wyszukiwania"""
+        query = search_text.lower() if search_text else ""
+        
+        if query:
+            filtered = [u for u in all_users_for_dropdown 
+                       if query in u["username"].lower() or query in u["email"].lower()]
+        else:
+            filtered = all_users_for_dropdown
+        
+        users_dropdown.options = [
+            ft.dropdown.Option(
+                key=str(u["id"]), 
+                text=f"{u['username']} ({u['email']})"
+            )
+            for u in filtered
+        ]
+        page.update()
+    
     def load_users_for_dropdown():
-        """Ładuje użytkowników do dropdowna"""
+        """Ładuje użytkowników do dropdowna z wyszukiwarką"""
+        nonlocal all_users_for_dropdown
         try:
             users = api.get_all_users()
+            all_users_for_dropdown = users
             users_dropdown.options = [
-                ft.dropdown.Option(key=str(u["id"]), text=f"{u['username']} (ID: {u['id']})")
+                ft.dropdown.Option(
+                    key=str(u["id"]), 
+                    text=f"{u['username']} ({u['email']})"
+                )
                 for u in users
             ]
+            user_search_field.value = ""
             page.update()
         except Exception as e:
             print(f"❌ Błąd ładowania użytkowników: {e}")
@@ -369,15 +433,16 @@ def create_admin_task_manager(page: ft.Page, api):
     
     # ========== DIALOGI ==========
     add_dialog = ft.AlertDialog(
-        title=ft.Text("➕ Dodaj Task dla Użytkownika"),
+        title=ft.Text("Dodaj Task dla Użytkownika"),
         content=ft.Container(
             content=ft.Column([
+                user_search_field,
                 users_dropdown,
                 new_task_title,
                 new_task_desc,
                 error_text
             ], tight=True, spacing=10),
-            width=400
+            width=450
         ),
         actions=[
             ft.TextButton("Anuluj", on_click=lambda e: setattr(add_dialog, 'open', False) or page.update()),
@@ -418,14 +483,33 @@ def create_admin_task_manager(page: ft.Page, api):
     )
     
     # ========== GŁÓWNY WIDGET ==========
+    search_field = ft.TextField(
+        hint_text="Szukaj taska...",
+        prefix_icon=ft.Icons.SEARCH,
+        on_change=search_changed,
+        width=250,
+        height=40,
+        text_size=14
+    )
+    
     widget = ft.Column([
         ft.Row([
-            ft.Text("📝 Wszystkie Taski", size=20, weight=ft.FontWeight.BOLD),
+            ft.Text("Wszystkie Taski", size=20, weight=ft.FontWeight.BOLD),
             ft.Container(expand=True),
-            filter_dropdown,
+            search_field,
             ft.IconButton(
                 icon=ft.Icons.CLEAR,
-                tooltip="Wyczyść filtr",
+                tooltip="Wyczyść wyszukiwanie",
+                on_click=lambda e: (
+                    setattr(search_field, 'value', ""),
+                    setattr(search_query, 'current', ""),
+                    filter_tasks()
+                )
+            ),
+            filter_dropdown,
+            ft.IconButton(
+                icon=ft.Icons.FILTER_ALT_OFF,
+                tooltip="Wyczyść filtr użytkownika",
                 on_click=lambda e: (
                     setattr(filter_dropdown, 'value', "all"),
                     filter_tasks()
@@ -433,22 +517,19 @@ def create_admin_task_manager(page: ft.Page, api):
             ),
             tasks_stats_text,
             ft.ElevatedButton(
-                "➕ Dodaj Task",
+                "Dodaj Task",
                 icon=ft.Icons.ADD_TASK,
                 on_click=show_add_dialog
             )
         ], spacing=10),
         ft.Divider(),
         ft.Container(
-            content=ft.ListView(
-                controls=[tasks_list],
-                spacing=0,
-                padding=10,
-                auto_scroll=False,
-                expand=True
-            ),
-            expand=True
+            content=tasks_list,
+            height=750,  # Stała wysokość dla scrollowania
+            padding=10,
+            bgcolor="#E3F2FD",
+            border_radius=10
         )
-    ], spacing=15, expand=True)
+    ], spacing=15)
     
     return widget, load_tasks

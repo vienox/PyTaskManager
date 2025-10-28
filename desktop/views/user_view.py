@@ -14,8 +14,8 @@ def create_user_view(page: ft.Page, api, user, on_logout):
     
     # Stats
     total_tasks = ft.Text("0", size=32, weight=ft.FontWeight.BOLD)
-    completed_tasks = ft.Text("0", size=32, weight=ft.FontWeight.BOLD, color=ft.colors.GREEN)
-    pending_tasks = ft.Text("0", size=32, weight=ft.FontWeight.BOLD, color=ft.colors.ORANGE)
+    completed_tasks = ft.Text("0", size=32, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN)
+    pending_tasks = ft.Text("0", size=32, weight=ft.FontWeight.BOLD, color=ft.Colors.ORANGE)
     
     def load_stats():
         """Oblicz statystyki tasków"""
@@ -37,31 +37,53 @@ def create_user_view(page: ft.Page, api, user, on_logout):
         """Przejdź do widoku tasków"""
         from views.tasks_view import create_tasks_view
         page.controls.clear()
-        page.add(create_tasks_view(page, api, user, on_logout))
+        
+        # Funkcja powrotu do profilu
+        def back_to_profile():
+            page.controls.clear()
+            page.add(create_user_view(page, api, user, on_logout))
+            page.update()
+        
+        page.add(create_tasks_view(page, api, user, on_logout, on_back_to_profile=back_to_profile))
         page.update()
     
     # ========== MAIN VIEW ==========
+    # Navbar - zamiast AppBar
+    navbar = ft.Container(
+        content=ft.Row([
+            # Tytuł
+            ft.Row([
+                ft.Icon(ft.Icons.PERSON, color=ft.Colors.WHITE, size=28),
+                ft.Text("Profil Użytkownika", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE)
+            ], spacing=10),
+            
+            # Spacer
+            ft.Container(expand=True),
+            
+            # Logout
+            ft.IconButton(
+                icon=ft.Icons.LOGOUT,
+                icon_color=ft.Colors.WHITE,
+                tooltip="Wyloguj",
+                on_click=lambda e: on_logout()
+            )
+        ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+        padding=15,
+        bgcolor=ft.Colors.BLUE_700,
+        border_radius=ft.border_radius.only(bottom_left=10, bottom_right=10)
+    )
+    
     view = ft.Column([
-        ft.AppBar(
-            title=ft.Text("👤 Profil Użytkownika"),
-            actions=[
-                ft.IconButton(
-                    ft.Icons.LOGOUT,
-                    on_click=lambda e: on_logout(),
-                    tooltip="Wyloguj"
-                )
-            ],
-            bgcolor=ft.Colors.BLUE
-        ),
+        navbar,
         
         ft.Container(
             content=ft.Column([
                 # Avatar
-                ft.Icon(ft.Icons.ACCOUNT_CIRCLE, size=100, color=ft.colors.BLUE),
+                ft.Icon(ft.Icons.ACCOUNT_CIRCLE, size=100, color=ft.Colors.BLUE),
                 
                 # User info
                 ft.Text(user["username"], size=28, weight=ft.FontWeight.BOLD),
-                ft.Text(user["email"], size=14, color=ft.colors.GREY),
+                ft.Text(user["email"], size=14, color=ft.Colors.GREY),
                 
                 ft.Divider(height=40),
                 
@@ -111,7 +133,7 @@ def create_user_view(page: ft.Page, api, user, on_logout):
                 
                 # Action button
                 ft.ElevatedButton(
-                    "📋 Zarządzaj Taskami",
+                    "Zarządzaj Taskami",
                     on_click=go_to_tasks,
                     width=300,
                     height=50,

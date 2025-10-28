@@ -1,7 +1,7 @@
 import flet as ft
 from components.task_card import create_task_card, create_empty_state
 
-def create_tasks_view(page: ft.Page, api, user, on_logout):
+def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=None):
     """
     Widok tasków dla zwykłego usera
     
@@ -10,40 +10,80 @@ def create_tasks_view(page: ft.Page, api, user, on_logout):
         api: APIClient instance
         user: dict z danymi usera (username, email, is_admin)
         on_logout: callback - wywołany po kliknięciu logout
+        on_back_to_profile: callback - powrót do profilu użytkownika
     """
     
-    task_list = ft.Column(scroll=ft.ScrollMode.ADAPTIVE, expand=True, spacing=10)
+    task_list = ft.Column(spacing=10, scroll=ft.ScrollMode.ALWAYS, expand=True)
     
     # Komunikat o błędach
     add_error = ft.Text("", color=ft.Colors.RED, size=12)
     edit_error = ft.Text("", color=ft.Colors.RED, size=12)
     
+    # Wyszukiwanie
+    search_query = ft.Ref[str]()
+    search_query.current = ""
+    all_tasks_cache = []
+    
     def load_tasks():
         """Pobierz taski z API i wyświetl"""
-        task_list.controls.clear()
+        nonlocal all_tasks_cache
         
         try:
             tasks = api.get_tasks()
-            
-            if not tasks:
-                task_list.controls.append(create_empty_state())
-            else:
-                for task in tasks:
-                    task_list.controls.append(
-                        create_task_card(
-                            task,
-                            on_toggle=handle_toggle,
-                            on_edit=handle_edit,
-                            on_delete=handle_delete
-                        )
-                    )
+            all_tasks_cache = tasks
+            filter_tasks()
                     
         except Exception as e:
+            task_list.controls.clear()
             task_list.controls.append(
                 ft.Text(f"❌ Błąd ładowania: {str(e)}", color="red")
             )
+            page.update()
+    
+    def filter_tasks():
+        """Filtruje taski według wyszukiwania"""
+        task_list.controls.clear()
+        
+        query = search_query.current.lower()
+        
+        if query:
+            filtered = [t for t in all_tasks_cache 
+                       if query in t["title"].lower() or 
+                          query in t.get("description", "").lower()]
+        else:
+            filtered = all_tasks_cache
+        
+        if not filtered:
+            if query:
+                task_list.controls.append(
+                    ft.Container(
+                        content=ft.Column([
+                            ft.Icon(ft.Icons.SEARCH_OFF, size=60, color=ft.Colors.GREY_400),
+                            ft.Text("Nie znaleziono pasujących tasków", color=ft.Colors.GREY_600)
+                        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+                        alignment=ft.alignment.center,
+                        padding=40
+                    )
+                )
+            else:
+                task_list.controls.append(create_empty_state())
+        else:
+            for task in filtered:
+                task_list.controls.append(
+                    create_task_card(
+                        task,
+                        on_toggle=handle_toggle,
+                        on_edit=handle_edit,
+                        on_delete=handle_delete
+                    )
+                )
         
         page.update()
+    
+    def search_changed(e):
+        """Obsługa zmiany w polu wyszukiwania"""
+        search_query.current = e.control.value
+        filter_tasks()
     
     def handle_toggle(task_id, new_value):
         """Obsługa zmiany statusu zadania"""
@@ -118,7 +158,7 @@ def create_tasks_view(page: ft.Page, api, user, on_logout):
             page.update()
     
     add_dialog = ft.AlertDialog(
-        title=ft.Text("➕ Nowy Task"),
+        title=ft.Text("Nowy Task"),
         content=ft.Container(
             content=ft.Column([title_field, desc_field, add_error], tight=True, spacing=10),
             width=500
@@ -190,7 +230,7 @@ def create_tasks_view(page: ft.Page, api, user, on_logout):
             page.update()
     
     edit_dialog = ft.AlertDialog(
-        title=ft.Text("✏️ Edytuj Task"),
+        title=ft.Text("Edytuj Task"),
         content=ft.Container(
             content=ft.Column([edit_title_field, edit_desc_field, edit_error], tight=True, spacing=10),
             width=500
@@ -215,41 +255,87 @@ def create_tasks_view(page: ft.Page, api, user, on_logout):
         page.update()
     
     # ========== MAIN VIEW ==========
+    search_field = ft.TextField(
+        hint_text="" \
+        "Szukaj taska...",
+        prefix_icon=ft.Icons.SEARCH,
+        on_change=search_changed,
+        width=300,
+        height=40,
+        text_size=14,
+        bgcolor=ft.Colors.WHITE
+    )
+    
+    # Navbar - zamiast AppBar
+    navbar_actions = []
+    
+    # Przycisk powrotu do profilu (jeśli callback istnieje)
+    if on_back_to_profile:
+        navbar_actions.append(
+            ft.IconButton(
+                icon=ft.Icons.HOME,
+                icon_color=ft.Colors.WHITE,
+                tooltip="Powrót do profilu",
+                on_click=lambda e: on_back_to_profile()
+            )
+        )
+    
+    # User info + logout
+    navbar_actions.extend([
+        ft.Icon(ft.Icons.PERSON, color=ft.Colors.WHITE, size=20),
+        ft.Text(user['username'], color=ft.Colors.WHITE, weight=ft.FontWeight.W_500),
+        ft.IconButton(
+            icon=ft.Icons.LOGOUT,
+            icon_color=ft.Colors.WHITE,
+            tooltip="Wyloguj",
+            on_click=lambda e: on_logout()
+        )
+    ])
+    
+    navbar = ft.Container(
+        content=ft.Row([
+            # Tytuł
+            ft.Row([
+                ft.Icon(ft.Icons.TASK_ALT, color=ft.Colors.WHITE, size=28),
+                ft.Text("Moje Taski", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE)
+            ], spacing=10),
+            
+            # Spacer
+            ft.Container(expand=True),
+            
+            # Actions (back + user info + logout)
+            ft.Row(navbar_actions, spacing=10)
+        ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+        padding=15,
+        bgcolor=ft.Colors.BLUE_700,
+        border_radius=ft.border_radius.only(bottom_left=10, bottom_right=10)
+    )
+    
     view = ft.Column([
-        ft.AppBar(
-            title=ft.Text(f"📋 Moje Taski"),
-            actions=[
-                ft.PopupMenuButton(
-                    items=[
-                        ft.PopupMenuItem(
-                            text=f"👤 {user['username']}",
-                            disabled=True
-                        ),
-                        ft.PopupMenuItem(),  # divider
-                        ft.PopupMenuItem(
-                            text="🚪 Wyloguj",
-                            on_click=lambda e: on_logout()
-                        )
-                    ]
-                )
-            ],
-            bgcolor=ft.colors.BLUE
-        ),
+        navbar,
         ft.Container(
-            content=ft.ListView(
-                controls=[task_list],
-                spacing=0,
-                padding=10,
-                auto_scroll=False,
-                expand=True
-            ),
-            padding=10,
-            expand=True
-        ),
-        ft.FloatingActionButton(
-            icon=ft.Icons.ADD,
-            on_click=show_add_dialog,
-            tooltip="Dodaj task"
+            content=ft.Column([
+                ft.Row([
+                    search_field,
+                    ft.IconButton(
+                        icon=ft.Icons.CLEAR,
+                        tooltip="Wyczyść wyszukiwanie",
+                        on_click=lambda e: (
+                            setattr(search_field, 'value', ""),
+                            setattr(search_query, 'current', ""),
+                            filter_tasks()
+                        )
+                    )
+                ], alignment=ft.MainAxisAlignment.CENTER),
+                ft.Container(
+                    content=task_list,
+                    height=500,  # Stała wysokość dla scrollowania
+                    padding=10,
+                    bgcolor="#E3F2FD",
+                    border_radius=10
+                )
+            ], spacing=10),
+            padding=20
         )
     ], expand=True, spacing=0)
     

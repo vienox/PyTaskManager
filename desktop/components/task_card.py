@@ -23,6 +23,8 @@ def create_task_card(task: dict, on_toggle, on_edit, on_delete):
         """Usunięcie zadania"""
         if on_delete:
             on_delete(task["id"])
+
+
     
     def edit_click(e):
         """Edycja zadania"""
@@ -98,7 +100,6 @@ def create_empty_state():
         content=ft.Column([
             ft.Icon(ft.Icons.INBOX, size=100, color=ft.Colors.GREY_400),
             ft.Text("Brak zadań", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.GREY_600),
-            ft.Text("Kliknij przycisk '+' aby dodać pierwsze zadanie", size=14, color=ft.Colors.GREY_500)
         ],
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         spacing=15

@@ -19,7 +19,7 @@ def create_nav_bar(page: ft.Page, current_user: dict, on_logout, on_profile=None
     if on_profile:
         menu_buttons.append(
             ft.TextButton(
-                "📊 Profil",
+                "Profil",
                 on_click=lambda e: on_profile(),
                 style=ft.ButtonStyle(color=ft.Colors.WHITE)
             )
@@ -38,7 +38,7 @@ def create_nav_bar(page: ft.Page, current_user: dict, on_logout, on_profile=None
     if current_user.get("is_admin") and on_admin:
         menu_buttons.append(
             ft.TextButton(
-                "🛡️ Panel Admina",
+                "Panel Admina",
                 on_click=lambda e: on_admin(),
                 style=ft.ButtonStyle(color=ft.Colors.AMBER_200)
             )
@@ -90,5 +90,5 @@ def create_nav_bar(page: ft.Page, current_user: dict, on_logout, on_profile=None
         bgcolor=ft.Colors.BLUE_700,
         border_radius=ft.border_radius.only(bottom_left=10, bottom_right=10)
 
-        
+
     )

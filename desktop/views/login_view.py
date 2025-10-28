@@ -53,7 +53,18 @@ def create_login_view(page: ft.Page, api, on_login_success):
             
         except Exception as err:
             loading.visible = False
-            error_text.value = f"❌ Błąd logowania: {str(err)}"
+            error_msg = str(err)
+            
+            # Szczegółowe komunikaty błędów
+            if "404" in error_msg or "User not found" in error_msg:
+                error_text.value = f"❌ Nie znaleziono użytkownika '{username_field.value}'"
+            elif "401" in error_msg or "Invalid password" in error_msg:
+                error_text.value = "❌ Nieprawidłowe hasło"
+            elif "500" in error_msg:
+                error_text.value = "❌ Błąd serwera. Sprawdź czy backend działa."
+            else:
+                error_text.value = f"❌ Błąd logowania: {error_msg}"
+            
             page.update()
     
     # Enter key = login

@@ -7,8 +7,11 @@ from components.admin_task_manager import create_admin_task_manager
 def create_admin_view(page: ft.Page, api, user, on_logout):
     """Panel admina - zarządzanie użytkownikami i taskami"""
     
-    users_list = ft.Column(scroll=ft.ScrollMode.ADAPTIVE, expand=True, spacing=10)
+    users_list = ft.Column(spacing=10, scroll=ft.ScrollMode.ALWAYS, expand=True)
     stats_text = ft.Text("", size=14, color=ft.Colors.GREY)
+    search_query = ft.Ref[str]()
+    search_query.current = ""
+    all_users_cache = []
     
     # Przełącznik widoku (użytkownicy / taski)
     current_view = ft.Ref[str]()
@@ -74,14 +77,10 @@ def create_admin_view(page: ft.Page, api, user, on_logout):
     
     def load_users():
         try:
+            nonlocal all_users_cache
             all_users = api.get_all_users()  # Endpoint admina
-            users_list.controls.clear()
-            
-            for u in all_users:
-                users_list.controls.append(create_user_card(u))
-            
-            stats_text.value = f"👥 Łącznie użytkowników: {len(all_users)}"
-            page.update()
+            all_users_cache = all_users
+            filter_users()
         except Exception as e:
             print(f"❌ Błąd ładowania userów: {e}")
             users_list.controls.clear()
@@ -89,6 +88,45 @@ def create_admin_view(page: ft.Page, api, user, on_logout):
                 ft.Text(f"❌ Błąd: {str(e)}", color=ft.Colors.RED)
             )
             page.update()
+    
+    def filter_users():
+        """Filtruje użytkowników według wyszukiwania"""
+        users_list.controls.clear()
+        
+        query = search_query.current.lower()
+        
+        if query:
+            filtered = [u for u in all_users_cache 
+                       if query in u["username"].lower() or query in u["email"].lower()]
+        else:
+            filtered = all_users_cache
+        
+        for u in filtered:
+            users_list.controls.append(create_user_card(u))
+        
+        if filtered:
+            stats_text.value = f"Wyświetlono: {len(filtered)} / {len(all_users_cache)} użytkowników"
+        else:
+            stats_text.value = f"Łącznie użytkowników: {len(all_users_cache)}"
+            if query:
+                users_list.controls.clear()
+                users_list.controls.append(
+                    ft.Container(
+                        content=ft.Column([
+                            ft.Icon(ft.Icons.SEARCH_OFF, size=60, color=ft.Colors.GREY_400),
+                            ft.Text("Nie znaleziono użytkowników", color=ft.Colors.GREY_600)
+                        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+                        alignment=ft.alignment.center,
+                        padding=40
+                    )
+                )
+        
+        page.update()
+    
+    def search_changed(e):
+        """Obsługa zmiany w polu wyszukiwania"""
+        search_query.current = e.control.value
+        filter_users()
     
     def create_user_card(u):
         return ft.Card(
@@ -209,7 +247,7 @@ def create_admin_view(page: ft.Page, api, user, on_logout):
     
     # Dialog dodawania użytkownika
     dialog = ft.AlertDialog(
-        title=ft.Text("➕ Dodaj nowego użytkownika"),
+        title=ft.Text("Dodaj nowego użytkownika"),
         content=ft.Container(
             content=ft.Column([
                 new_username,
@@ -228,12 +266,31 @@ def create_admin_view(page: ft.Page, api, user, on_logout):
     page.overlay.append(dialog)
     
     # ========== CONTENERY WIDOKÓW ==========
+    search_field = ft.TextField(
+        hint_text="🔍 Szukaj użytkownika...",
+        prefix_icon=ft.Icons.SEARCH,
+        on_change=search_changed,
+        width=300,
+        height=40,
+        text_size=14
+    )
+    
     users_content = ft.Column([
         ft.Row([
-            ft.Text("👥 Zarządzanie Użytkownikami", size=20, weight=ft.FontWeight.BOLD),
+            ft.Text("Zarządzanie Użytkownikami", size=20, weight=ft.FontWeight.BOLD),
             ft.Container(expand=True),
+            search_field,
+            ft.IconButton(
+                icon=ft.Icons.CLEAR,
+                tooltip="Wyczyść wyszukiwanie",
+                on_click=lambda e: (
+                    setattr(search_field, 'value', ""),
+                    setattr(search_query, 'current', ""),
+                    filter_users()
+                )
+            ),
             ft.ElevatedButton(
-                "➕ Dodaj użytkownika",
+                "Dodaj użytkownika",
                 icon=ft.Icons.PERSON_ADD,
                 on_click=add_user_clicked
             )
@@ -241,16 +298,13 @@ def create_admin_view(page: ft.Page, api, user, on_logout):
         stats_text,
         ft.Divider(),
         ft.Container(
-            content=ft.ListView(
-                controls=[users_list],
-                spacing=0,
-                padding=10,
-                auto_scroll=False,
-                expand=True
-            ),
-            expand=True
+            content=users_list,
+            height=750,  # Stała wysokość dla scrollowania
+            padding=10,
+            bgcolor="#E3F2FD",
+            border_radius=10
         )
-    ], spacing=15, expand=True)
+    ], spacing=15)
     
     # Widget tasków z admin_task_manager
     tasks_content = ft.Container(
@@ -296,7 +350,7 @@ def create_admin_view(page: ft.Page, api, user, on_logout):
     
     # ========== PRZYCISKI ZAKŁADEK (po definicji funkcji) ==========
     users_tab_btn_widget = ft.ElevatedButton(
-        "👥 Użytkownicy",
+        "Użytkownicy",
         icon=ft.Icons.PEOPLE,
         on_click=switch_to_users,
         bgcolor=ft.Colors.BLUE_700
@@ -304,7 +358,7 @@ def create_admin_view(page: ft.Page, api, user, on_logout):
     users_tab_btn = users_tab_btn_widget  # Przypisz do zmiennej globalnej
     
     tasks_tab_btn_widget = ft.ElevatedButton(
-        "📝 Wszystkie Taski",
+        "Wszystkie Taski",
         icon=ft.Icons.TASK,
         on_click=switch_to_tasks
     )

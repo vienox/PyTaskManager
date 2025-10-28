@@ -41,8 +41,11 @@ def health():
 @app.post("/auth/token")
 def login(form: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
     user = session.exec(select(User).where(User.username == form.username)).first()
-    if not user or not verify_password(form.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not verify_password(form.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid password")
     
     token = create_access_token(user.username)
     return {"access_token": token, "token_type": "bearer"}

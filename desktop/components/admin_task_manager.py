@@ -525,7 +525,7 @@ def create_admin_task_manager(page: ft.Page, api):
         ft.Divider(),
         ft.Container(
             content=tasks_list,
-            height=750,  # Stała wysokość dla scrollowania
+            height=650,  # Stała wysokość dla scrollowania
             padding=10,
             bgcolor="#E3F2FD",
             border_radius=10

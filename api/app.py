@@ -129,6 +129,46 @@ def get_all_tasks(admin: User = Depends(get_admin_user), session: Session = Depe
     tasks = session.exec(select(Task)).all()
     return tasks
 
+@app.post("/admin/tasks", response_model=Task, status_code=201)
+def create_task_admin(data: TaskCreate, owner_id: int, admin: User = Depends(get_admin_user), session: Session = Depends(get_session)):
+    """Admin tworzy task dla określonego użytkownika"""
+    # Sprawdź czy użytkownik istnieje
+    owner = session.get(User, owner_id)
+    if not owner:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    task = Task(**data.dict(), owner_id=owner_id)
+    session.add(task)
+    session.commit()
+    session.refresh(task)
+    return task
+
+@app.put("/admin/tasks/{task_id}", response_model=Task)
+def update_task_admin(task_id: int, data: TaskUpdate, admin: User = Depends(get_admin_user), session: Session = Depends(get_session)):
+    """Admin edytuje task dowolnego użytkownika"""
+    task = session.get(Task, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    for key, value in data.dict(exclude_unset=True).items():
+        setattr(task, key, value)
+    
+    session.add(task)
+    session.commit()
+    session.refresh(task)
+    return task
+
+@app.delete("/admin/tasks/{task_id}", status_code=204)
+def delete_task_admin(task_id: int, admin: User = Depends(get_admin_user), session: Session = Depends(get_session)):
+    """Admin usuwa task dowolnego użytkownika"""
+    task = session.get(Task, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    session.delete(task)
+    session.commit()
+    return None
+
 @app.delete("/admin/users/{user_id}", status_code=204)
 def delete_user(user_id: int, admin: User = Depends(get_admin_user), session: Session = Depends(get_session)):
     user = session.get(User, user_id)

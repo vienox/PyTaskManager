@@ -2,7 +2,7 @@ import requests
 
 class APIClient:
     def __init__(self):
-        self.base_url = "http://127.0.0.1:8000"  # ✅ Upewnij się, że to jest poprawny adres
+        self.base_url = "http://127.0.0.1:8000"
         self.token = None
     
     def login(self, username: str, password: str):
@@ -84,3 +84,33 @@ class APIClient:
         r = requests.put(f"{self.base_url}/admin/users/{user_id}/make-admin", headers=headers)
         r.raise_for_status()
         return r.json()
+    
+    # ============ ADMIN TASK MANAGEMENT ============
+    def create_task_for_user(self, owner_id: int, title: str, description: str = "", completed: bool = False):
+        """Admin tworzy task dla określonego użytkownika"""
+        headers = {"Authorization": f"Bearer {self.token}"}
+        data = {"title": title, "description": description, "completed": completed}
+        r = requests.post(f"{self.base_url}/admin/tasks?owner_id={owner_id}", json=data, headers=headers)
+        r.raise_for_status()
+        return r.json()
+    
+    def update_task_admin(self, task_id: int, title: str = None, description: str = None, completed: bool = None):
+        """Admin edytuje task dowolnego użytkownika"""
+        headers = {"Authorization": f"Bearer {self.token}"}
+        data = {}
+        if title is not None:
+            data["title"] = title
+        if description is not None:
+            data["description"] = description
+        if completed is not None:
+            data["completed"] = completed
+        
+        r = requests.put(f"{self.base_url}/admin/tasks/{task_id}", json=data, headers=headers)
+        r.raise_for_status()
+        return r.json()
+    
+    def delete_task_admin(self, task_id: int):
+        """Admin usuwa task dowolnego użytkownika"""
+        headers = {"Authorization": f"Bearer {self.token}"}
+        r = requests.delete(f"{self.base_url}/admin/tasks/{task_id}", headers=headers)
+        r.raise_for_status()

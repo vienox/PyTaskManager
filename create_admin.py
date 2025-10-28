@@ -1,10 +1,13 @@
 """Skrypt do stworzenia pierwszego admina"""
 from api.models import User
-from api.db import engine
+from api.db import engine, init_db
 from api.auth import hash_password
 from sqlmodel import Session, select
 
 def create_first_admin():
+    # Najpierw utwórz tabele w bazie danych
+    init_db()
+    
     with Session(engine) as session:
         # Sprawdź czy admin już istnieje
         existing = session.exec(select(User).where(User.username == "admin")).first()

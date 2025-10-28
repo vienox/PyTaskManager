@@ -89,4 +89,6 @@ def create_nav_bar(page: ft.Page, current_user: dict, on_logout, on_profile=None
         padding=15,
         bgcolor=ft.Colors.BLUE_700,
         border_radius=ft.border_radius.only(bottom_left=10, bottom_right=10)
+
+        
     )

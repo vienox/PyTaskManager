@@ -1,7 +1,0 @@
-🚩 Czerwone flagi dla rekrutera (usuń):
-❌ Brak testów → "Nie umie testować kodu"
-❌ Funkcje po 450 linii → "Nie umie refaktoryzować"
-❌ Hardcoded secrets → "Nie zna security basics"
-❌ Polski + angielski → "Nieprofesjonalne"
-❌ Duplikacje kodu → "Nie zna DRY"
-

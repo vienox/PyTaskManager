@@ -1,119 +1,66 @@
+"""
+Login view for the Task Manager Desktop application.
+
+This module handles user authentication via the API client.
+Uses modular components from desktop.components.login_helpers.
+"""
+
 import flet as ft
 from api_client import APIClient
+from components.login_helpers import (
+    create_login_form_fields,
+    create_login_handler,
+    create_keyboard_handler,
+    create_login_layout
+)
 
-def create_login_view(page: ft.Page, api, on_login_success):
+
+def create_login_view(page: ft.Page, api: APIClient, on_login_success):
     """
-    Widok logowania
+    Create the login view.
     
     Args:
-        page: Flet Page
-        api: APIClient instance
-        on_login_success: callback(user) - wywołany po udanym logowaniu
+        page: The Flet Page instance for UI rendering.
+        api: API client instance for authentication.
+        on_login_success: Callback function(user) called when login succeeds.
+    
+    Returns:
+        ft.Container: The complete login view container.
     """
     
-    username_field = ft.TextField(
-        label="Username",
-        width=300,
-        autofocus=True,
-        prefix_icon=ft.Icons.PERSON
+    # Create form fields using helper
+    username_field, password_field, error_text, loading = create_login_form_fields()
+
+    # Create login handler
+    login_handler = create_login_handler(
+        page=page,
+        api=api,
+        username_field=username_field,
+        password_field=password_field,
+        error_text=error_text,
+        loading=loading,
+        on_success=on_login_success
     )
-    
-    password_field = ft.TextField(
-        label="Password",
-        password=True,
+
+    # Create login button
+    login_button = ft.ElevatedButton(
+        text="Log In",
         width=300,
-        prefix_icon=ft.Icons.LOCK,
-        can_reveal_password=True
-    )
-    
-    error_text = ft.Text(color="red", size=12)
-    loading = ft.ProgressRing(visible=False, width=30, height=30)
-    
-    def login_click(e):
-        # Walidacja
-        if not username_field.value or not password_field.value:
-            error_text.value = "⚠️ Wypełnij wszystkie pola"
-            page.update()
-            return
-        
-        # Pokaż loading
-        loading.visible = True
-        error_text.value = ""
-        page.update()
-        
-        try:
-            # Logowanie przez API
-            api.login(username_field.value, password_field.value)
-            
-            # Pobierz dane usera
-            user = api.get_me()
-            
-            # Callback - przekaż dane usera
-            on_login_success(user)
-            
-        except Exception as err:
-            loading.visible = False
-            error_msg = str(err)
-            
-            # Szczegółowe komunikaty błędów
-            if "404" in error_msg or "User not found" in error_msg:
-                error_text.value = f"❌ Nie znaleziono użytkownika '{username_field.value}'"
-            elif "401" in error_msg or "Invalid password" in error_msg:
-                error_text.value = "❌ Nieprawidłowe hasło"
-            elif "500" in error_msg:
-                error_text.value = "❌ Błąd serwera. Sprawdź czy backend działa."
-            else:
-                error_text.value = f"❌ Błąd logowania: {error_msg}"
-            
-            page.update()
-    
-    # Enter key = login
-    def on_key_press(e: ft.KeyboardEvent):
-        if e.key == "Enter":
-            login_click(None)
-    
-    page.on_keyboard_event = on_key_press
-    
-    return ft.Container(
-        content=ft.Column([
-            ft.Container(height=50),  # spacer
-            ft.Icon(ft.Icons.TASK_ALT, size=80, color=ft.Colors.BLUE),
-            ft.Text(
-                "Task Manager",
-                size=32,
-                weight=ft.FontWeight.BOLD,
-                text_align=ft.TextAlign.CENTER
-            ),
-            ft.Text(
-                "Zaloguj się aby kontynuować",
-                size=14,
-                color=ft.Colors.GREY,
-                text_align=ft.TextAlign.CENTER
-            ),
-            ft.Container(height=30),
-            username_field,
-            password_field,
-            ft.Container(height=10),
-            ft.ElevatedButton(
-                "Zaloguj",
-                on_click=login_click,
-                width=300,
-                height=45,
-                style=ft.ButtonStyle(
-                    shape=ft.RoundedRectangleBorder(radius=10)
-                )
-            ),
-            loading,
-            error_text,
-        ],
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        alignment=ft.MainAxisAlignment.CENTER
-        ),
-        alignment=ft.alignment.center,
-        expand=True,
-        gradient=ft.LinearGradient(
-            begin=ft.alignment.top_center,
-            end=ft.alignment.bottom_center,
-            colors=["#e3f2fd", "#ffffff"]
+        height=45,
+        on_click=login_handler,
+        style=ft.ButtonStyle(
+            shape=ft.RoundedRectangleBorder(radius=10)
         )
+    )
+
+    # Set up keyboard handler for Enter key
+    page.on_keyboard_event = create_keyboard_handler(login_handler)
+
+    # Create and return layout
+    return create_login_layout(
+        username_field=username_field,
+        password_field=password_field,
+        login_button=login_button,
+        loading=loading,
+        error_text=error_text
     )

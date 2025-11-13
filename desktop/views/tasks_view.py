@@ -118,8 +118,9 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
         multiline=True,
         width=500,
         min_lines=3,
-        hint_text="Opcjonalny szczegółowy opis"
+        hint_text="Optional detailed description"
     )
+    
     
     def validate_add_title():
         """Walidacja tytułu dodawania"""
@@ -158,31 +159,31 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
             page.update()
     
     add_dialog = ft.AlertDialog(
-        title=ft.Text("Nowy Task"),
+        title=ft.Text("New Task"),
         content=ft.Container(
             content=ft.Column([title_field, desc_field, add_error], tight=True, spacing=10),
             width=500
         ),
         actions=[
-            ft.TextButton("Anuluj", on_click=lambda e: close_dialog()),
-            ft.ElevatedButton("Dodaj", on_click=add_task_click)
+            ft.TextButton("Cancel", on_click=lambda e: close_dialog()),
+            ft.ElevatedButton("Add", on_click=add_task_click)
         ]
     )
     
     # ========== DIALOG EDYCJI TASKU ==========
     edit_title_field = ft.TextField(
-        label="Tytuł *",
+        label="Title *",
         width=500,
-        hint_text="Min. 3 znaki",
+        hint_text="Min. 3 characters",
         on_change=lambda e: validate_edit_title()
     )
     edit_desc_field = ft.TextField(label="Opis", multiline=True, width=500, min_lines=3)
     edit_task_id = None
     
     def validate_edit_title():
-        """Walidacja tytułu edycji"""
+        """Validation of the edit title"""
         if edit_title_field.value and len(edit_title_field.value.strip()) < 3:
-            edit_title_field.error_text = "Min. 3 znaki"
+            edit_title_field.error_text = "Min. 3 characters"
         else:
             edit_title_field.error_text = None
         page.update()
@@ -204,8 +205,8 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
         
         # Walidacja
         if not edit_title_field.value or len(edit_title_field.value.strip()) < 3:
-            edit_error.value = "❌ Tytuł musi mieć min. 3 znaki"
-            edit_title_field.error_text = "Min. 3 znaki"
+            edit_error.value = "Title must be at least 3 characters"
+            edit_title_field.error_text = "Min. 3 characters"
             page.update()
             return
         
@@ -222,22 +223,22 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
         except Exception as err:
             error_msg = str(err)
             if "401" in error_msg or "403" in error_msg:
-                edit_error.value = "❌ Sesja wygasła"
+                edit_error.value = "Session expired"
             elif "404" in error_msg:
-                edit_error.value = "❌ Task nie istnieje"
+                edit_error.value = "Task does not exist"
             else:
-                edit_error.value = f"❌ Błąd: {error_msg}"
+                edit_error.value = f"Error: {error_msg}"
             page.update()
     
     edit_dialog = ft.AlertDialog(
-        title=ft.Text("Edytuj Task"),
+        title=ft.Text("Edit Task"),
         content=ft.Container(
             content=ft.Column([edit_title_field, edit_desc_field, edit_error], tight=True, spacing=10),
             width=500
         ),
         actions=[
-            ft.TextButton("Anuluj", on_click=lambda e: close_dialog()),
-            ft.ElevatedButton("Zapisz", on_click=save_edit_click)
+            ft.TextButton("Cancel", on_click=lambda e: close_dialog()),
+            ft.ElevatedButton("Save", on_click=save_edit_click)
         ]
     )
     
@@ -269,7 +270,6 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
     # Navbar - zamiast AppBar
     navbar_actions = []
     
-    # Przycisk powrotu do profilu (jeśli callback istnieje)
     if on_back_to_profile:
         navbar_actions.append(
             ft.IconButton(
@@ -294,13 +294,11 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
     
     navbar = ft.Container(
         content=ft.Row([
-            # Tytuł
             ft.Row([
                 ft.Icon(ft.Icons.TASK_ALT, color=ft.Colors.WHITE, size=28),
-                ft.Text("Moje Taski", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE)
+                ft.Text("My tasks", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE)
             ], spacing=10),
             
-            # Spacer
             ft.Container(expand=True),
             
             # Actions (back + user info + logout)
@@ -319,7 +317,7 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
                     search_field,
                     ft.IconButton(
                         icon=ft.Icons.CLEAR,
-                        tooltip="Wyczyść wyszukiwanie",
+                        tooltip="Clear search",
                         on_click=lambda e: (
                             setattr(search_field, 'value', ""),
                             setattr(search_query, 'current', ""),
@@ -329,7 +327,7 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
                 ], alignment=ft.MainAxisAlignment.CENTER),
                 ft.Container(
                     content=task_list,
-                    height=500,  # Stała wysokość dla scrollowania
+                    height=500,  # Fixed height for scrolling
                     padding=10,
                     bgcolor="#E3F2FD",
                     border_radius=10
@@ -339,7 +337,6 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
         )
     ], expand=True, spacing=0)
     
-    # Załaduj taski na start
     load_tasks()
     
     return view

@@ -30,6 +30,7 @@ from views.adminviews import create_admin_view
 
 
 def main(page: ft.Page):
+<<<<<<< HEAD
     """
     Main application entry point and navigation controller.
     
@@ -48,6 +49,9 @@ def main(page: ft.Page):
         - current_user: Current logged-in user dict (None when logged out)
     """
     # Window configuration
+=======
+    """Main application entry point."""
+>>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
     page.title = "Task Manager"
     page.window_width = 900
     page.window_height = 700
@@ -63,12 +67,16 @@ def main(page: ft.Page):
     # ============ Navigation Functions ============
     
     def show_login():
+<<<<<<< HEAD
         """
         Display login screen.
         
         Clears current view and shows login form.
         On successful login, routes to appropriate view based on user role.
         """
+=======
+        """Display login view."""
+>>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         page.controls.clear()
         
         def on_login_success(user):
@@ -80,6 +88,7 @@ def main(page: ft.Page):
             """
             nonlocal current_user
             current_user = user
+<<<<<<< HEAD
             print(f"Logged in: {user}")
             
             # Role-based routing
@@ -88,12 +97,18 @@ def main(page: ft.Page):
                 show_admin()
             else:
                 print("Navigating to user profile")
+=======
+            if user["is_admin"]:
+                show_admin()
+            else:
+>>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
                 show_user_profile()
         
         page.add(create_login_view(page, api, on_login_success))
         page.update()
     
     def show_user_profile():
+<<<<<<< HEAD
         """
         Display user profile dashboard (regular users only).
         
@@ -101,32 +116,46 @@ def main(page: ft.Page):
         Provides navigation to tasks view.
         """
         print("Showing user profile")
+=======
+        """Display user profile view with statistics dashboard."""
+>>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         page.controls.clear()
         try:
             page.add(create_user_view(page, api, current_user, on_logout=show_login))
             page.update()
         except Exception as e:
+<<<<<<< HEAD
             print(f"Error in user_view: {e}")
+=======
+>>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
             import traceback
             traceback.print_exc()
     
     def show_tasks():
+<<<<<<< HEAD
         """
         Display tasks view (regular users).
         
         Shows task list with CRUD operations for current user's tasks.
         """
         print("Showing tasks view")
+=======
+        """Display tasks view for regular user."""
+>>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         page.controls.clear()
         try:
             page.add(create_tasks_view(page, api, current_user, on_logout=show_login, on_back_to_profile=show_user_profile))
             page.update()
         except Exception as e:
+<<<<<<< HEAD
             print(f"Error in tasks_view: {e}")
+=======
+>>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
             import traceback
             traceback.print_exc()
     
     def show_admin():
+<<<<<<< HEAD
         """
         Display admin panel (admins only).
         
@@ -134,10 +163,14 @@ def main(page: ft.Page):
         Accessible only to users with is_admin=True.
         """
         print("Showing admin panel")
+=======
+        """Display admin panel."""
+>>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         page.controls.clear()
         try:
             page.add(create_admin_view(page, api, current_user, on_logout=show_login))
             page.update()
+<<<<<<< HEAD
             print("Admin panel loaded")
         except Exception as e:
             print(f"Error in admin_view: {e}")
@@ -146,6 +179,13 @@ def main(page: ft.Page):
     
     # ============ Application Start ============
     # Show login screen on startup
+=======
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+    
+    # Initialize application with login view
+>>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
     show_login()
 
 

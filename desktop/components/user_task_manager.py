@@ -1,32 +1,34 @@
 import flet as ft
-from components.user_task_manager import create_user_task_manager
+from components.task_card import create_task_card, create_empty_state
 
-def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=None):
+
+def create_user_task_manager(page: ft.Page, api):
     """
-    Create tasks view for regular user.
+    Task management component for regular user.
+    Allows viewing, adding, editing, and deleting own tasks.
     
     Args:
-        page: Flet Page instance
+        page: Flet Page
         api: APIClient instance
-        user: Dictionary containing user data (username, email, is_admin)
-        on_logout: Callback function for logout action
-        on_back_to_profile: Callback function to return to user profile
+        
+    Returns:
+        tuple: (widget, load_tasks_callback)
     """
     
-    tasks_widget, load_tasks_callback = create_user_task_manager(page, api)
+    task_list = ft.Column(spacing=10, scroll=ft.ScrollMode.ALWAYS, expand=True)
     
-<<<<<<< HEAD
-    # Komunikat o błędach
+    # Error messages
     add_error = ft.Text("", color=ft.Colors.RED, size=12)
     edit_error = ft.Text("", color=ft.Colors.RED, size=12)
     
-    # Wyszukiwanie
+    # Search
     search_query = ft.Ref[str]()
     search_query.current = ""
     all_tasks_cache = []
     
+    # Loading and filtering
     def load_tasks():
-        """Pobierz taski z API i wyświetl"""
+        """Fetch tasks from API and display"""
         nonlocal all_tasks_cache
         
         try:
@@ -37,12 +39,12 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
         except Exception as e:
             task_list.controls.clear()
             task_list.controls.append(
-                ft.Text(f"❌ Błąd ładowania: {str(e)}", color="red")
+                ft.Text(f"Error loading tasks: {str(e)}", color="red")
             )
             page.update()
     
     def filter_tasks():
-        """Filtruje taski według wyszukiwania"""
+        """Filter tasks based on search query"""
         task_list.controls.clear()
         
         query = search_query.current.lower()
@@ -60,7 +62,7 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
                     ft.Container(
                         content=ft.Column([
                             ft.Icon(ft.Icons.SEARCH_OFF, size=60, color=ft.Colors.GREY_400),
-                            ft.Text("Nie znaleziono pasujących tasków", color=ft.Colors.GREY_600)
+                            ft.Text("No matching tasks found", color=ft.Colors.GREY_600)
                         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
                         alignment=ft.alignment.center,
                         padding=40
@@ -82,51 +84,51 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
         page.update()
     
     def search_changed(e):
-        """Obsługa zmiany w polu wyszukiwania"""
+        """Handle search field changes"""
         search_query.current = e.control.value
         filter_tasks()
     
+    # Task action handlers
     def handle_toggle(task_id, new_value):
-        """Obsługa zmiany statusu zadania"""
+        """Handle task status change"""
         try:
             api.update_task(task_id, completed=new_value)
             load_tasks()
         except Exception as err:
-            print(f"Błąd toggle: {err}")
+            print(f"Error toggling task: {err}")
     
     def handle_edit(task):
-        """Obsługa edycji zadania"""
+        """Handle task edit"""
         show_edit_dialog(task)
     
     def handle_delete(task_id):
-        """Obsługa usunięcia zadania"""
+        """Handle task deletion"""
         try:
             api.delete_task(task_id)
             load_tasks()
         except Exception as err:
-            print(f"Błąd usuwania: {err}")
+            print(f"Error deleting task: {err}")
     
-    # ========== DIALOG DODAWANIA TASKU ==========
+    # Add task dialog
     title_field = ft.TextField(
-        label="Tytuł *",
+        label="Title *",
         width=500,
         autofocus=True,
-        hint_text="Min. 3 znaki",
+        hint_text="Min. 3 characters",
         on_change=lambda e: validate_add_title()
     )
     desc_field = ft.TextField(
-        label="Opis",
+        label="Description",
         multiline=True,
         width=500,
         min_lines=3,
         hint_text="Optional detailed description"
     )
     
-    
     def validate_add_title():
-        """Walidacja tytułu dodawania"""
+        """Validate add title"""
         if title_field.value and len(title_field.value.strip()) < 3:
-            title_field.error_text = "Min. 3 znaki"
+            title_field.error_text = "Min. 3 characters"
         else:
             title_field.error_text = None
         page.update()
@@ -134,10 +136,10 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
     def add_task_click(e):
         add_error.value = ""
         
-        # Walidacja
+        # Validation
         if not title_field.value or len(title_field.value.strip()) < 3:
-            add_error.value = "❌ Tytuł musi mieć min. 3 znaki"
-            title_field.error_text = "Min. 3 znaki"
+            add_error.value = "Title must be at least 3 characters"
+            title_field.error_text = "Min. 3 characters"
             page.update()
             return
         
@@ -147,17 +149,25 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
             desc_field.value = ""
             title_field.error_text = None
             load_tasks()
-            page.dialog.open = False
+            add_dialog.open = False
             page.update()
         except Exception as err:
             error_msg = str(err)
             if "401" in error_msg or "403" in error_msg:
-                add_error.value = "❌ Sesja wygasła. Zaloguj się ponownie."
+                add_error.value = "Session expired. Please log in again."
             elif "500" in error_msg:
-                add_error.value = "❌ Błąd serwera. Spróbuj ponownie."
+                add_error.value = "Server error. Please try again."
             else:
-                add_error.value = f"❌ Błąd: {error_msg}"
+                add_error.value = f"Error: {error_msg}"
             page.update()
+    
+    def show_add_dialog(e):
+        title_field.value = ""
+        desc_field.value = ""
+        add_error.value = ""
+        title_field.error_text = None
+        add_dialog.open = True
+        page.update()
     
     add_dialog = ft.AlertDialog(
         title=ft.Text("New Task"),
@@ -166,23 +176,25 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
             width=500
         ),
         actions=[
-            ft.TextButton("Cancel", on_click=lambda e: close_dialog()),
+            ft.TextButton("Cancel", on_click=lambda e: setattr(add_dialog, 'open', False) or page.update()),
             ft.ElevatedButton("Add", on_click=add_task_click)
         ]
     )
     
-    # ========== DIALOG EDYCJI TASKU ==========
+    page.overlay.append(add_dialog)
+    
+    # Edit task dialog
     edit_title_field = ft.TextField(
         label="Title *",
         width=500,
         hint_text="Min. 3 characters",
         on_change=lambda e: validate_edit_title()
     )
-    edit_desc_field = ft.TextField(label="Opis", multiline=True, width=500, min_lines=3)
+    edit_desc_field = ft.TextField(label="Description", multiline=True, width=500, min_lines=3)
     edit_task_id = None
     
     def validate_edit_title():
-        """Validation of the edit title"""
+        """Validate edit title"""
         if edit_title_field.value and len(edit_title_field.value.strip()) < 3:
             edit_title_field.error_text = "Min. 3 characters"
         else:
@@ -196,15 +208,13 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
         edit_desc_field.value = task.get("description", "")
         edit_error.value = ""
         edit_title_field.error_text = None
-        
-        page.dialog = edit_dialog
         edit_dialog.open = True
         page.update()
     
     def save_edit_click(e):
         edit_error.value = ""
         
-        # Walidacja
+        # Validation
         if not edit_title_field.value or len(edit_title_field.value.strip()) < 3:
             edit_error.value = "Title must be at least 3 characters"
             edit_title_field.error_text = "Min. 3 characters"
@@ -219,7 +229,7 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
             )
             edit_title_field.error_text = None
             load_tasks()
-            page.dialog.open = False
+            edit_dialog.open = False
             page.update()
         except Exception as err:
             error_msg = str(err)
@@ -238,28 +248,16 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
             width=500
         ),
         actions=[
-            ft.TextButton("Cancel", on_click=lambda e: close_dialog()),
+            ft.TextButton("Cancel", on_click=lambda e: setattr(edit_dialog, 'open', False) or page.update()),
             ft.ElevatedButton("Save", on_click=save_edit_click)
         ]
     )
     
-    def close_dialog():
-        page.dialog.open = False
-        page.update()
+    page.overlay.append(edit_dialog)
     
-    def show_add_dialog(e):
-        title_field.value = ""
-        desc_field.value = ""
-        add_error.value = ""
-        title_field.error_text = None
-        page.dialog = add_dialog
-        add_dialog.open = True
-        page.update()
-    
-    # ========== MAIN VIEW ==========
+    # Main widget
     search_field = ft.TextField(
-        hint_text="" \
-        "Szukaj taska...",
+        hint_text="Search tasks...",
         prefix_icon=ft.Icons.SEARCH,
         on_change=search_changed,
         width=300,
@@ -268,90 +266,33 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
         bgcolor=ft.Colors.WHITE
     )
     
-    # Navbar - zamiast AppBar
-=======
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
-    navbar_actions = []
-    
-    if on_back_to_profile:
-        navbar_actions.append(
+    widget = ft.Column([
+        ft.Row([
+            search_field,
             ft.IconButton(
-                icon=ft.Icons.HOME,
-                icon_color=ft.Colors.WHITE,
-                tooltip="Back to Profile",
-                on_click=lambda e: on_back_to_profile()
-            )
-        )
-    
-    navbar_actions.extend([
-        ft.Icon(ft.Icons.PERSON, color=ft.Colors.WHITE, size=20),
-        ft.Text(user['username'], color=ft.Colors.WHITE, weight=ft.FontWeight.W_500),
-        ft.IconButton(
-            icon=ft.Icons.LOGOUT,
-            icon_color=ft.Colors.WHITE,
-            tooltip="Logout",
-            on_click=lambda e: on_logout()
-        )
-    ])
-    
-    navbar = ft.Container(
-        content=ft.Row([
-            ft.Row([
-                ft.Icon(ft.Icons.TASK_ALT, color=ft.Colors.WHITE, size=28),
-<<<<<<< HEAD
-                ft.Text("My tasks", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE)
-=======
-                ft.Text("My Tasks", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE)
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
-            ], spacing=10),
-            
-            ft.Container(expand=True),
-            
-            ft.Row(navbar_actions, spacing=10)
-        ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-        padding=15,
-        bgcolor=ft.Colors.BLUE_700,
-        border_radius=ft.border_radius.only(bottom_left=10, bottom_right=10)
-    )
-    
-    view = ft.Column([
-        navbar,
-        ft.Container(
-<<<<<<< HEAD
-            content=ft.Column([
-                ft.Row([
-                    search_field,
-                    ft.IconButton(
-                        icon=ft.Icons.CLEAR,
-                        tooltip="Clear search",
-                        on_click=lambda e: (
-                            setattr(search_field, 'value', ""),
-                            setattr(search_query, 'current', ""),
-                            filter_tasks()
-                        )
-                    )
-                ], alignment=ft.MainAxisAlignment.CENTER),
-                ft.Container(
-                    content=task_list,
-                    height=500,  # Fixed height for scrolling
-                    padding=10,
-                    bgcolor="#E3F2FD",
-                    border_radius=10
+                icon=ft.Icons.CLEAR,
+                tooltip="Clear search",
+                on_click=lambda e: (
+                    setattr(search_field, 'value', ""),
+                    setattr(search_query, 'current', ""),
+                    filter_tasks()
                 )
-            ], spacing=10),
-            padding=20
+            ),
+            ft.Container(expand=True),
+            ft.ElevatedButton(
+                "Add Task",
+                icon=ft.Icons.ADD_TASK,
+                on_click=show_add_dialog
+            )
+        ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+        ft.Divider(),
+        ft.Container(
+            content=task_list,
+            height=500,
+            padding=10,
+            bgcolor="#E3F2FD",
+            border_radius=10
         )
-    ], expand=True, spacing=0)
+    ], spacing=10)
     
-    load_tasks()
-=======
-            content=tasks_widget,
-            padding=20,
-            expand=True
-        )
-    ], expand=True, spacing=0)
-    
-    load_tasks_callback()
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
-    
-    return view
+    return widget, load_tasks

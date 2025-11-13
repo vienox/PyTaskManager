@@ -192,8 +192,12 @@ class APIClient:
         r = requests.delete(f"{self.base_url}/tasks/{task_id}", headers=headers)
         r.raise_for_status()
     
+<<<<<<< HEAD
     # ============ Admin User Management ============
     
+=======
+    # Admin endpoints
+>>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
     def create_user(self, username: str, email: str, password: str):
         """
         Create a new user (admin only).
@@ -265,6 +269,7 @@ class APIClient:
         r.raise_for_status()
         return r.json()
     
+<<<<<<< HEAD
     # ============ Admin Task Management ============
     
     def get_all_tasks(self):
@@ -298,6 +303,11 @@ class APIClient:
         Raises:
             requests.HTTPError: 403 if not admin, 404 if user not found
         """
+=======
+    # Admin task management
+    def create_task_for_user(self, owner_id: int, title: str, description: str = "", completed: bool = False):
+        """Admin creates task for specific user"""
+>>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         headers = {"Authorization": f"Bearer {self.token}"}
         data = {"title": title, "description": description, "completed": completed}
         r = requests.post(f"{self.base_url}/admin/tasks?owner_id={owner_id}", json=data, headers=headers)
@@ -305,6 +315,7 @@ class APIClient:
         return r.json()
     
     def update_task_admin(self, task_id: int, title: str = None, description: str = None, completed: bool = None):
+<<<<<<< HEAD
         """
         Update any task in the system (admin only).
         
@@ -320,6 +331,9 @@ class APIClient:
         Raises:
             requests.HTTPError: 403 if not admin, 404 if task not found
         """
+=======
+        """Admin edits task of any user"""
+>>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         headers = {"Authorization": f"Bearer {self.token}"}
         data = {}
         if title is not None:
@@ -334,6 +348,7 @@ class APIClient:
         return r.json()
     
     def delete_task_admin(self, task_id: int):
+<<<<<<< HEAD
         """
         Delete any task in the system (admin only).
         
@@ -346,6 +361,9 @@ class APIClient:
         Raises:
             requests.HTTPError: 403 if not admin, 404 if task not found
         """
+=======
+        """Admin deletes task of any user"""
+>>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         headers = {"Authorization": f"Bearer {self.token}"}
         r = requests.delete(f"{self.base_url}/admin/tasks/{task_id}", headers=headers)
         r.raise_for_status()

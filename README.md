@@ -141,7 +141,7 @@ Username: john_smith, emma_johnson, michael_brown, ...
 Password: password123  (for all users)
 ```
 
-## 🛠️ Development Workflow
+## Development Workflow
 
 ### Running in Development Mode
 
@@ -174,7 +174,7 @@ With backend running, visit:
 - **Swagger UI**: http://127.0.0.1:8000/docs
 - **ReDoc**: http://127.0.0.1:8000/redoc
 
-## 🎨 Flet UI Patterns
+## Flet UI Patterns
 
 ### View Creation Signature
 ```python
@@ -300,7 +300,7 @@ Token expired (60 min validity)
 Logout and login again
 ```
 
-## 🔄 Version History
+## Version History
 
 ### v2.0.0 (Current)
 - English codebase with professional documentation
@@ -313,7 +313,7 @@ Logout and login again
 - Basic task management
 - Role-based access control
 
-## 📚 Technology Stack
+## Stack
 
 - **Backend**: FastAPI 0.120.1, Python 3.8+
 - **Desktop**: Flet 0.28.3 (Flutter for Python)
@@ -325,7 +325,7 @@ Logout and login again
 
 This project is for educational and demonstration purposes.
 
-## 👨‍💻 Development
+## Development
 
 **Code Style:**
 - PEP 8 compliance

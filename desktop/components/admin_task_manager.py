@@ -4,12 +4,7 @@ from components.task_card import create_admin_task_card
 
 def create_admin_task_manager(page: ft.Page, api):
     """
-<<<<<<< HEAD
     Create admin task manager component.
-=======
-    Task management component for administrator.
-    Allows adding, editing, and deleting user tasks.
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
     
     Args:
         page: Flet page instance
@@ -21,7 +16,6 @@ def create_admin_task_manager(page: ft.Page, api):
     tasks_list = ft.Column(spacing=10, scroll=ft.ScrollMode.ALWAYS, expand=True)
     tasks_stats_text = ft.Text("", size=14, color=ft.Colors.GREY)
     
-<<<<<<< HEAD
     # Search state
     search_query = ft.Ref[str]()
     search_query.current = ""
@@ -31,17 +25,6 @@ def create_admin_task_manager(page: ft.Page, api):
     filter_dropdown = None  
     
     # Form fields for add/edit dialogs
-=======
-    # Search
-    search_query = ft.Ref[str]()
-    search_query.current = ""
-    
-    # Filtering
-    all_tasks_cache = []
-    filter_dropdown = None  # Initialized later
-    
-    # Forms
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
     new_task_title = ft.TextField(
         label="Title *",
         autofocus=True,
@@ -73,11 +56,7 @@ def create_admin_task_manager(page: ft.Page, api):
     user_search_query.current = ""
     all_users_for_dropdown = []
     
-<<<<<<< HEAD
     # User dropdown list
-=======
-    # User list for dropdown
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
     users_dropdown = ft.Dropdown(
         label="Select User *",
         width=400,
@@ -91,7 +70,6 @@ def create_admin_task_manager(page: ft.Page, api):
         on_change=lambda e: filter_users_dropdown(e.control.value)
     )
     
-<<<<<<< HEAD
     # ========== ERROR HANDLING ==========
     def show_error(error_text_control, exception):
         """
@@ -114,8 +92,6 @@ def create_admin_task_manager(page: ft.Page, api):
         
         page.update()
     
-=======
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
     # Validations
     def validate_new_title():
         """Validate new task title"""
@@ -134,11 +110,7 @@ def create_admin_task_manager(page: ft.Page, api):
         page.update()
     
     def load_tasks():
-<<<<<<< HEAD
         """Load all tasks from the system"""
-=======
-        """Load all tasks from system"""
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         nonlocal all_tasks_cache
         try:
             all_tasks = api.get_all_tasks()
@@ -171,11 +143,7 @@ def create_admin_task_manager(page: ft.Page, api):
         else:
             filtered = all_tasks_cache
         
-<<<<<<< HEAD
         # Filter by search query
-=======
-        # Filter by search
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         query = search_query.current.lower()
         if query:
             filtered = [t for t in filtered 
@@ -211,31 +179,20 @@ def create_admin_task_manager(page: ft.Page, api):
         page.update()
     
     def search_changed(e):
-<<<<<<< HEAD
         """Handle search field change"""
-=======
-        """Handle search field changes"""
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         search_query.current = e.control.value
         filter_tasks()
     
     def load_users_filter():
-<<<<<<< HEAD
         """Load users into filter dropdown"""
-=======
-        """Load users for filtering dropdown"""
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         try:
             users = api.get_all_users()
             
             # Unique user IDs with tasks
             user_ids_with_tasks = set(t["owner_id"] for t in all_tasks_cache)
             
-<<<<<<< HEAD
             # Map user_id -> username
-=======
             # Mapping user_id -> username
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
             user_map = {u["id"]: u["username"] for u in users}
             
             # Dropdown options
@@ -253,10 +210,7 @@ def create_admin_task_manager(page: ft.Page, api):
             filter_dropdown.options = options
             page.update()
         except Exception as e:
-<<<<<<< HEAD
             show_error(error_text, e    )
-=======
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
             print(f"Error loading users for filter: {e}")
     
     def filter_users_dropdown(search_text):
@@ -279,11 +233,7 @@ def create_admin_task_manager(page: ft.Page, api):
         page.update()
     
     def load_users_for_dropdown():
-<<<<<<< HEAD
         """Load users into dropdown with search"""
-=======
-        """Load users for dropdown with search"""
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         nonlocal all_users_for_dropdown
         try:
             users = api.get_all_users()
@@ -305,11 +255,7 @@ def create_admin_task_manager(page: ft.Page, api):
         return ft.Container(
             content=ft.Column([
                 ft.Icon(ft.Icons.INBOX, size=100, color=ft.Colors.GREY_400),
-<<<<<<< HEAD
                 ft.Text("No tasks in the system", size=20, color=ft.Colors.GREY_600)
-=======
-                ft.Text("No tasks in system", size=20, color=ft.Colors.GREY_600)
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
             alignment=ft.alignment.center,
             expand=True
@@ -320,11 +266,7 @@ def create_admin_task_manager(page: ft.Page, api):
         return ft.Card(
             content=ft.Container(
                 content=ft.Row([
-<<<<<<< HEAD
                     # Checkbox status
-=======
-                    # Status checkbox
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
                     ft.Checkbox(
                         value=task["completed"],
                         on_change=lambda e: toggle_task(task["id"], e.control.value),
@@ -380,11 +322,7 @@ def create_admin_task_manager(page: ft.Page, api):
         )
     
     def toggle_task(task_id, completed):
-<<<<<<< HEAD
         """Toggle task status"""
-=======
-        """Change task status"""
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         try:
             api.update_task_admin(task_id, completed=completed)
             load_tasks()
@@ -430,22 +368,7 @@ def create_admin_task_manager(page: ft.Page, api):
             load_tasks()
             page.update()
         except Exception as ex:
-<<<<<<< HEAD
             show_error(error_text, ex)
-=======
-            error_msg = str(ex)
-            
-            if "401" in error_msg or "403" in error_msg:
-                error_text.value = "Unauthorized. Please log in again as admin."
-            elif "404" in error_msg:
-                error_text.value = "User does not exist"
-            elif "500" in error_msg:
-                error_text.value = "Server error. Please try again."
-            else:
-                error_text.value = f"Error: {error_msg}"
-            
-            page.update()
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
     
     def show_edit_dialog(task):
         """Show edit task dialog"""
@@ -482,22 +405,7 @@ def create_admin_task_manager(page: ft.Page, api):
             load_tasks()
             page.update()
         except Exception as ex:
-<<<<<<< HEAD
             show_error(edit_error_text, ex)
-=======
-            error_msg = str(ex)
-            
-            if "401" in error_msg or "403" in error_msg:
-                edit_error_text.value = "Unauthorized"
-            elif "404" in error_msg:
-                edit_error_text.value = "Task does not exist"
-            elif "500" in error_msg:
-                edit_error_text.value = "Server error"
-            else:
-                edit_error_text.value = f"Error: {error_msg}"
-            
-            page.update()
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
     
     def delete_task_confirm(task):
         """Confirm task deletion"""
@@ -513,11 +421,7 @@ def create_admin_task_manager(page: ft.Page, api):
                 page.update()
         
         confirm_dialog.content = ft.Text(
-<<<<<<< HEAD
             f'Are you sure you want to delete the task:\n"{task["title"]}"?',
-=======
-            f'Are you sure you want to delete:\n"{task["title"]}"?',
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
             text_align=ft.TextAlign.CENTER
         )
         confirm_dialog.actions = [
@@ -527,11 +431,7 @@ def create_admin_task_manager(page: ft.Page, api):
         confirm_dialog.open = True
         page.update()
     
-<<<<<<< HEAD
     # ========== DIALOGS ==========
-=======
-    # Dialogs
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
     add_dialog = ft.AlertDialog(
         title=ft.Text("Add Task for User"),
         content=ft.Container(
@@ -574,11 +474,7 @@ def create_admin_task_manager(page: ft.Page, api):
     
     page.overlay.extend([add_dialog, edit_dialog, confirm_dialog])
     
-<<<<<<< HEAD
     # ========== FILTER INITIALIZATION (after function definitions) ==========
-=======
-    # Filter initialization (after function definitions)
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
     filter_dropdown = ft.Dropdown(
         label="Filter by user",
         hint_text="All users",
@@ -586,15 +482,9 @@ def create_admin_task_manager(page: ft.Page, api):
         on_change=lambda e: filter_tasks()
     )
     
-<<<<<<< HEAD
     # ========== MAIN WIDGET ==========
     search_field = ft.TextField(
         hint_text="Search task...",
-=======
-    # Main widget
-    search_field = ft.TextField(
-        hint_text="Search tasks...",
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
         prefix_icon=ft.Icons.SEARCH,
         on_change=search_changed,
         width=250,
@@ -635,11 +525,7 @@ def create_admin_task_manager(page: ft.Page, api):
         ft.Divider(),
         ft.Container(
             content=tasks_list,
-<<<<<<< HEAD
             height=750,  # Fixed height for scrolling
-=======
-            height=650,  # Fixed height for scrolling
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
             padding=10,
             bgcolor="#E3F2FD",
             border_radius=10

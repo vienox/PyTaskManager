@@ -24,39 +24,14 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 def _prepare_password(password: str) -> bytes:
     """
-    Prepare password for bcrypt hashing using SHA256 pre-hash.
-    
-    This function applies SHA256 hashing before bcrypt to handle passwords
-    longer than bcrypt's 72-byte limit. This is a critical security pattern
-    that must be consistently applied to all password operations.
-    
-    Args:
-        password: Plain text password string
-        
-    Returns:
-        bytes: SHA256 hexdigest as bytes, ready for bcrypt hashing
-        
-    Note:
-        This pattern is incompatible with passlib. Always use direct bcrypt imports.
+    Przygotowuje hasło do hashowania bcrypt.
+    Używa SHA256 aby obsłużyć długie hasła (bcrypt ma limit 72 bajtów).
     """
     return hashlib.sha256(password.encode('utf-8')).hexdigest().encode('utf-8')
 
 
 def hash_password(password: str) -> str:
-    """
-    Hash a password using bcrypt with SHA256 pre-hashing.
-    
-    Args:
-        password: Plain text password to hash
-        
-    Returns:
-        str: Bcrypt hashed password (UTF-8 decoded)
-        
-    Example:
-        >>> hashed = hash_password("user_password_123")
-        >>> verify_password("user_password_123", hashed)
-        True
-    """
+    """Hashuje hasło używając bcrypt z pre-hash SHA256"""
     prepared = _prepare_password(password)
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(prepared, salt)
@@ -64,23 +39,7 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    """
-    Verify a plain text password against a hashed password.
-    
-    Args:
-        plain: Plain text password to verify
-        hashed: Bcrypt hashed password (from database)
-        
-    Returns:
-        bool: True if password matches, False otherwise
-        
-    Example:
-        >>> stored_hash = hash_password("secret123")
-        >>> verify_password("secret123", stored_hash)
-        True
-        >>> verify_password("wrong", stored_hash)
-        False
-    """
+    """Weryfikuje hasło"""
     prepared = _prepare_password(plain)
     return bcrypt.checkpw(prepared, hashed.encode('utf-8'))
 

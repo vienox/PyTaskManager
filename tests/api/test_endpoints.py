@@ -8,6 +8,13 @@ import pytest
 from fastapi.testclient import TestClient
 
 
+def test_health_check(client: TestClient):
+    """Test health check endpoint."""
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
 # ============ Authentication Tests ============
 
 def test_login_success(client: TestClient, test_user):
@@ -183,10 +190,42 @@ def test_access_with_invalid_token(client: TestClient):
     assert response.status_code == 401
 
 
-# ============ Health Check ============
+def test_delete_user_as_admin(client: TestClient, test_admin, admin_headers, session):
+    """Test admin deleting a user."""
+    from api.models import User
+    from api.auth import hash_password
+    
+    user = User(username="todelete", email="delete@test.com", hashed_password=hash_password("pass123"))
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    
+    response = client.delete(f"/admin/users/{user.id}", headers=admin_headers)
+    assert response.status_code == 204
 
-def test_health_check(client: TestClient):
-    """Test health check endpoint."""
-    response = client.get("/health")
+
+def test_make_admin(client: TestClient, test_admin, admin_headers, test_user):
+    """Test promoting user to admin."""
+    response = client.put(f"/admin/users/{test_user.id}/make-admin", headers=admin_headers)
     assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+    data = response.json()
+    assert data["is_admin"] is True
+
+
+def test_create_task_for_user(client: TestClient, test_admin, test_user, admin_headers):
+    """Test admin creating task for specific user."""
+    task_data = {"title": "Admin Task", "description": "For user"}
+    response = client.post(f"/admin/tasks?owner_id={test_user.id}", json=task_data, headers=admin_headers)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["owner_id"] == test_user.id
+
+
+def test_update_any_task_as_admin(client: TestClient, test_user, test_admin, auth_headers, admin_headers):
+    """Test admin updating any user's task."""
+    task_resp = client.post("/tasks", json={"title": "User Task"}, headers=auth_headers)
+    task_id = task_resp.json()["id"]
+    
+    response = client.put(f"/admin/tasks/{task_id}", json={"completed": True}, headers=admin_headers)
+    assert response.status_code == 200
+    assert response.json()["completed"] is True

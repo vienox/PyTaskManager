@@ -65,10 +65,10 @@ def seed_database():
             session.add(admin)
             session.commit()
             session.refresh(admin)
-            print(f"✅ Admin created (ID: {admin.id})")
+            print(f"Admin created (ID: {admin.id})")
         else:
             admin = existing_admin
-            print(f"✅ Admin already exists (ID: {admin.id})")
+            print(f" Admin already exists (ID: {admin.id})")
         
         # ============ Clear Existing Data ============
         print("🗑️ Clearing existing users (keeping admin)...")

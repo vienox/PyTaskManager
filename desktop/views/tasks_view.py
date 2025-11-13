@@ -15,7 +15,6 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
     
     tasks_widget, load_tasks_callback = create_user_task_manager(page, api)
     
-<<<<<<< HEAD
     # Komunikat o błędach
     add_error = ft.Text("", color=ft.Colors.RED, size=12)
     edit_error = ft.Text("", color=ft.Colors.RED, size=12)
@@ -269,8 +268,6 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
     )
     
     # Navbar - zamiast AppBar
-=======
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
     navbar_actions = []
     
     if on_back_to_profile:
@@ -298,11 +295,7 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
         content=ft.Row([
             ft.Row([
                 ft.Icon(ft.Icons.TASK_ALT, color=ft.Colors.WHITE, size=28),
-<<<<<<< HEAD
                 ft.Text("My tasks", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE)
-=======
-                ft.Text("My Tasks", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE)
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
             ], spacing=10),
             
             ft.Container(expand=True),
@@ -317,7 +310,6 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
     view = ft.Column([
         navbar,
         ft.Container(
-<<<<<<< HEAD
             content=ft.Column([
                 ft.Row([
                     search_field,
@@ -344,14 +336,5 @@ def create_tasks_view(page: ft.Page, api, user, on_logout, on_back_to_profile=No
     ], expand=True, spacing=0)
     
     load_tasks()
-=======
-            content=tasks_widget,
-            padding=20,
-            expand=True
-        )
-    ], expand=True, spacing=0)
-    
-    load_tasks_callback()
->>>>>>> 6124b066d07b1027ac1e7848f2c94c660b46e332
     
     return view

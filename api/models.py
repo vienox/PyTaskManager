@@ -1,5 +1,6 @@
 from typing import Optional
 from sqlmodel import SQLModel, Field
+from pydantic import EmailStr
 
 
 class User(SQLModel, table=True):
@@ -12,8 +13,8 @@ class User(SQLModel, table=True):
 
 class UserCreate(SQLModel):
     username: str = Field(min_length=3, max_length=50)
-    email: str = Field(min_length=5, max_length=100)
-    password: str = Field(min_length=6)
+    email: EmailStr
+    password: str = Field(min_length=8, description="Minimum 8 characters")
 
 
 class UserRead(SQLModel):
@@ -28,7 +29,7 @@ class Task(SQLModel, table=True):
     title: str
     description: Optional[str] = None
     completed: bool = False
-    owner_id: int = Field(foreign_key="user.id")
+    owner_id: int = Field(foreign_key="user.id", ondelete="CASCADE")
 
 
 class TaskCreate(SQLModel):

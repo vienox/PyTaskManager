@@ -52,6 +52,31 @@
 </tr>
 </table>
 
+## 🔒 Security Features
+
+<table>
+<tr>
+<td width="50%">
+
+### 🛡️ Authentication
+- **JWT Tokens** (60min expiry)
+- **SHA256 + bcrypt** password hashing
+- **Rate Limiting** (5 login attempts/min)
+- **Role-based Access Control** (Admin/User)
+
+</td>
+<td width="50%">
+
+### ✅ Validation
+- **Email Format** validation (EmailStr)
+- **Password Strength** (min 8 characters)
+- **Input Sanitization** (Pydantic models)
+- **CASCADE Delete** (orphan prevention)
+
+</td>
+</tr>
+</table>
+
 ## 🏗️ Architecture
 
 ```mermaid

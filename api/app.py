@@ -1,4 +1,5 @@
 from typing import List
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlmodel import select, Session
@@ -6,12 +7,13 @@ from .models import User, UserCreate, UserRead, Task, TaskCreate, TaskUpdate
 from .db import init_db, get_session
 from .auth import hash_password, verify_password, create_access_token, decode_token
 
-app = FastAPI(title="Tasks API", version="2.0")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
-
-@app.on_event("startup")
-def on_startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     init_db()
+    yield
+
+app = FastAPI(title="Tasks API", version="2.0", lifespan=lifespan)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
 def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)) -> User:
@@ -61,7 +63,7 @@ def get_tasks(current_user: User = Depends(get_current_user), session: Session =
 
 @app.post("/tasks", response_model=Task, status_code=201)
 def create_task(data: TaskCreate, current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):
-    task = Task(**data.dict(), owner_id=current_user.id)
+    task = Task(**data.model_dump(), owner_id=current_user.id)
     session.add(task)
     session.commit()
     session.refresh(task)
@@ -82,7 +84,7 @@ def update_task(task_id: int, data: TaskUpdate, current_user: User = Depends(get
     if not task or task.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    for key, value in data.dict(exclude_unset=True).items():
+    for key, value in data.model_dump(exclude_unset=True).items():
         setattr(task, key, value)
     
     session.add(task)
@@ -141,7 +143,7 @@ def create_task_admin(data: TaskCreate, owner_id: int, admin: User = Depends(get
     if not owner:
         raise HTTPException(status_code=404, detail="User not found")
     
-    task = Task(**data.dict(), owner_id=owner_id)
+    task = Task(**data.model_dump(), owner_id=owner_id)
     session.add(task)
     session.commit()
     session.refresh(task)
@@ -154,7 +156,7 @@ def update_task_admin(task_id: int, data: TaskUpdate, admin: User = Depends(get_
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    for key, value in data.dict(exclude_unset=True).items():
+    for key, value in data.model_dump(exclude_unset=True).items():
         setattr(task, key, value)
     
     session.add(task)

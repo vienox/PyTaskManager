@@ -10,10 +10,11 @@ Security Notes:
     - The SHA256 pre-hash is applied to ALL password operations
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Optional
 from jose import jwt, JWTError
 import bcrypt
+import hashlib
 import hashlib
 
 # JWT Configuration
@@ -59,7 +60,7 @@ def create_access_token(sub: str, expires_minutes: int = ACCESS_TOKEN_EXPIRE_MIN
         >>> token = create_access_token("john_doe")
         >>> # Token valid for 60 minutes
     """
-    to_encode = {"sub": sub, "exp": datetime.utcnow() + timedelta(minutes=expires_minutes)}
+    to_encode = {"sub": sub, "exp": datetime.now(UTC) + timedelta(minutes=expires_minutes)}
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 

@@ -44,3 +44,5 @@ htmlcov/
 
 # Docker
 postgres_data/
+
+tasks.db

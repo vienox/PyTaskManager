@@ -280,8 +280,8 @@ DATABASE_URL=postgresql://taskuser:taskpass@localhost/tasks
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `POST` | `/auth/token` | Login and get JWT token | ❌ |
-| `GET` | `/auth/me` | Get current user info | ✅ |
+| `POST` | `/auth/token` | Login and get JWT token | 🔓 Public |
+| `GET` | `/auth/me` | Get current user info | ✅ Required |
 
 </details>
 

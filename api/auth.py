@@ -15,12 +15,12 @@ from typing import Optional
 from jose import jwt, JWTError
 import bcrypt
 import hashlib
-import hashlib
+from .config import settings
 
 # JWT Configuration
-SECRET_KEY = "super-secret-change-me"  # TODO: Move to environment variables in production
+SECRET_KEY = settings.secret_key
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 
 
 def _prepare_password(password: str) -> bytes:

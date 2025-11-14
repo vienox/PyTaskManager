@@ -16,6 +16,7 @@ Usage:
 """
 
 import requests
+from .config import settings
 
 
 class APIClient:
@@ -54,7 +55,7 @@ class APIClient:
         
         Sets base_url from config and initializes token as None.
         """
-        self.base_url = "http://127.0.0.1:8000"
+        self.base_url = settings.api_url
         self.token = None
     
     # ============ Authentication ============

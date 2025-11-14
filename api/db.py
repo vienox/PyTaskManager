@@ -11,10 +11,11 @@ Database Details:
 """
 
 from sqlmodel import SQLModel, create_engine, Session
+from .config import settings
 
 # SQLite database engine
 # echo=False disables SQL query logging for production
-engine = create_engine("sqlite:///tasks.db", echo=False)
+engine = create_engine(settings.database_url, echo=False)
 
 
 def init_db():

@@ -55,7 +55,7 @@ def seed_database():
         existing_admin = session.exec(select(User).where(User.username == "admin")).first()
         
         if not existing_admin:
-            print("➕ Creating administrator...")
+            print("Creating administrator...")
             admin = User(
                 username="admin",
                 email="admin@taskmanager.com",
@@ -77,7 +77,7 @@ def seed_database():
             session.delete(user)
         session.commit()
         
-        print("🗑️ Clearing existing tasks...")
+        print("Clearing existing tasks...")
         old_tasks = session.exec(select(Task)).all()
         for task in old_tasks:
             session.delete(task)

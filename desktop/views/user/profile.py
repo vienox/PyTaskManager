@@ -9,7 +9,7 @@ def create_user_view(page, api, user, on_logout):
     
     def load_stats():
         try:
-            tasks = api.get("/tasks")
+            tasks = api.get_tasks()
             total.value = str(len(tasks))
             completed.value = str(sum(1 for t in tasks if t["completed"]))
             pending.value = str(sum(1 for t in tasks if not t["completed"]))

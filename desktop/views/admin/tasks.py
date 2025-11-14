@@ -13,25 +13,11 @@ def task_manager(page, api):
         try:
             all_tasks = api.get_all_tasks()
             all_users = api.get_all_users()
-            update_filter_dropdown()
             filter_tasks()
         except Exception as e:
             tasks_list.controls.clear()
             tasks_list.controls.append(ft.Text(f"Error: {str(e)}", color="red"))
             page.update()
-    
-    def update_filter_dropdown():
-        user_map = {u["id"]: u["username"] for u in all_users}
-        user_ids = set(t["owner_id"] for t in all_tasks)
-        
-        options = [ft.dropdown.Option(key="all", text="All Users")]
-        for uid in sorted(user_ids):
-            username = user_map.get(uid, f"User {uid}")
-            count = sum(1 for t in all_tasks if t["owner_id"] == uid)
-            options.append(ft.dropdown.Option(key=str(uid), text=f"{username} ({count})"))
-        
-        filter_dropdown.options = options
-        page.update()
     
     def filter_tasks():
         tasks_list.controls.clear()
@@ -85,23 +71,65 @@ def task_manager(page, api):
     def add_task_dialog():
         title_field = ft.TextField(label="Title", width=400)
         desc_field = ft.TextField(label="Description", multiline=True, min_lines=3, width=400)
-        user_dropdown = ft.Dropdown(label="Assign to User", width=400)
-        user_dropdown.options = [ft.dropdown.Option(key=str(u["id"]), text=u["username"]) for u in all_users]
+        
+        user_suggestions = []
+        selected_user_id = [None]  # Lista aby móc modyfikować w zagnieżdżonej funkcji
+        
+        user_field = ft.TextField(
+            label="Assign to User (type username)", 
+            width=400, 
+            hint_text="Start typing username...",
+            on_change=lambda e: update_user_suggestions(e.control.value)
+        )
+        
+        suggestions_list = ft.Column([], height=150, scroll=ft.ScrollMode.AUTO)
+        error_text = ft.Text("", color=ft.Colors.RED, size=12)
+        
+        def update_user_suggestions(query):
+            suggestions_list.controls.clear()
+            if not query:
+                selected_user_id[0] = None
+                page.update()
+                return
+            
+            # Szukaj pasujących użytkowników
+            query_lower = query.lower()
+            matching = [u for u in all_users if query_lower in u["username"].lower()]
+            
+            for u in matching:
+                suggestions_list.controls.append(
+                    ft.TextButton(
+                        text=u["username"],
+                        on_click=lambda e, uid=u["id"], uname=u["username"]: select_user(uid, uname)
+                    )
+                )
+            page.update()
+        
+        def select_user(user_id, username):
+            selected_user_id[0] = user_id
+            user_field.value = username
+            suggestions_list.controls.clear()
+            page.update()
         
         def add_task(e):
-            if not title_field.value or not user_dropdown.value:
+            error_text.value = ""
+            if not title_field.value or not selected_user_id[0]:
+                error_text.value = "Title and User are required"
+                page.update()
                 return
+            
             try:
-                api.create_task_for_user(int(user_dropdown.value), title_field.value, desc_field.value)
+                api.create_task_for_user(selected_user_id[0], title_field.value, desc_field.value or "")
                 dialog.open = False
                 page.update()
                 load_tasks()
             except Exception as ex:
-                print(f"Error: {ex}")
+                error_text.value = f"Error: {str(ex)}"
+                page.update()
         
         dialog = ft.AlertDialog(
             title=ft.Text("Add New Task"),
-            content=ft.Column([title_field, desc_field, user_dropdown], tight=True),
+            content=ft.Column([title_field, desc_field, user_field, suggestions_list, error_text], tight=True, height=400),
             actions=[
                 ft.TextButton("Cancel", on_click=lambda e: setattr(dialog, 'open', False) or page.update()),
                 ft.ElevatedButton("Add Task", on_click=add_task)
@@ -120,14 +148,78 @@ def task_manager(page, api):
     
     search_field.on_change = search_changed
     
-    filter_dropdown = ft.Dropdown(label="Filter by user", width=250, value="all")
+    # Filtr użytkowników z sugestiami
+    selected_filter_user = [None]
+    filter_search = ft.TextField(
+        hint_text="Type username to filter...",
+        prefix_icon=ft.Icons.PERSON_SEARCH,
+        width=250,
+        height=40,
+        on_change=lambda e: update_filter_suggestions(e.control.value)
+    )
     
-    def filter_changed(e):
+    filter_suggestions = ft.Column([], spacing=5, visible=False)
+    
+    def update_filter_suggestions(query):
+        filter_suggestions.controls.clear()
+        
+        if not query:
+            selected_filter_user[0] = None
+            filter_suggestions.visible = False
+            filter_user = "all"
+            filter_tasks()
+            page.update()
+            return
+        
+        query_lower = query.lower()
+        matching = [u for u in all_users if query_lower in u["username"].lower()]
+        
+        if matching:
+            filter_suggestions.visible = True
+            for u in matching[:5]:  # Pokaż max 5 wyników
+                filter_suggestions.controls.append(
+                    ft.Container(
+                        content=ft.TextButton(
+                            text=u["username"],
+                            on_click=lambda e, uid=u["id"], uname=u["username"]: select_filter_user(uid, uname)
+                        ),
+                        bgcolor=ft.Colors.WHITE,
+                        padding=5,
+                        border_radius=5
+                    )
+                )
+        else:
+            filter_suggestions.visible = False
+        
+        page.update()
+    
+    def select_filter_user(user_id, username):
         nonlocal filter_user
-        filter_user = e.control.value
+        selected_filter_user[0] = user_id
+        filter_user = str(user_id)
+        filter_search.value = username
+        filter_suggestions.controls.clear()
+        filter_suggestions.visible = False
         filter_tasks()
+        page.update()
     
-    filter_dropdown.on_change = filter_changed
+    def clear_filter_click(e):
+        nonlocal filter_user
+        filter_search.value = ""
+        selected_filter_user[0] = None
+        filter_suggestions.controls.clear()
+        filter_suggestions.visible = False
+        filter_user = "all"
+        filter_search.value = ""
+        filter_tasks()
+        page.update()
+    
+    def clear_search_click(e):
+        nonlocal search_query
+        search_field.value = ""
+        search_query = ""
+        filter_tasks()
+        page.update()
     
     widget = ft.Column([
         ft.Row([
@@ -135,9 +227,9 @@ def task_manager(page, api):
             ft.Container(expand=True),
             ft.ElevatedButton("Add Task", icon=ft.Icons.ADD, on_click=lambda e: add_task_dialog()),
             search_field,
-            ft.IconButton(icon=ft.Icons.CLEAR, on_click=lambda e: (setattr(search_field, 'value', ""), search_changed(e))),
-            filter_dropdown,
-            ft.IconButton(icon=ft.Icons.FILTER_ALT_OFF, on_click=lambda e: (setattr(filter_dropdown, 'value', "all"), filter_changed(e)))
+            ft.IconButton(icon=ft.Icons.CLEAR, on_click=clear_search_click),
+            ft.Column([filter_search, filter_suggestions], spacing=0),
+            ft.IconButton(icon=ft.Icons.FILTER_ALT_OFF, on_click=clear_filter_click)
         ], spacing=10),
         ft.Divider(),
         ft.Container(content=tasks_list, height=650, padding=10, bgcolor="#E3F2FD", border_radius=10)

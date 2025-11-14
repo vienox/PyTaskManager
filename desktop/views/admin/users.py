@@ -60,7 +60,7 @@ def user_manager(page, api):
             error_text.value = "Username min. 3 characters"
             page.update()
             return
-        if not re.match(r'^[^@]+@[^@]+\\.[^@]+$', email_field.value):
+        if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email_field.value):
             error_text.value = "Invalid email"
             page.update()
             return

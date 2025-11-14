@@ -11,9 +11,9 @@ class User(SQLModel, table=True):
 
 
 class UserCreate(SQLModel):
-    username: str
-    email: str
-    password: str
+    username: str = Field(min_length=3, max_length=50)
+    email: str = Field(min_length=5, max_length=100)
+    password: str = Field(min_length=6)
 
 
 class UserRead(SQLModel):
@@ -32,12 +32,12 @@ class Task(SQLModel, table=True):
 
 
 class TaskCreate(SQLModel):
-    title: str
-    description: Optional[str] = None
+    title: str = Field(min_length=3, max_length=200)
+    description: Optional[str] = Field(default=None, max_length=1000)
     completed: Optional[bool] = False
 
 
 class TaskUpdate(SQLModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
+    title: Optional[str] = Field(default=None, min_length=3, max_length=200)
+    description: Optional[str] = Field(default=None, max_length=1000)
     completed: Optional[bool] = None

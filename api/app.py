@@ -1,6 +1,7 @@
 from typing import List
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlmodel import select, Session
 from .models import User, UserCreate, UserRead, Task, TaskCreate, TaskUpdate
@@ -13,6 +14,16 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(title="Tasks API", version="2.0", lifespan=lifespan)
+
+# CORS middleware for future web clients
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # React/Vite dev servers
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 

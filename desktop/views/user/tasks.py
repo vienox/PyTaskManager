@@ -116,6 +116,13 @@ def create_tasks_view(page, api, user, on_logout, on_back_to_profile=None):
     
     search_field.on_change = search_changed
     
+    def clear_search_click(e):
+        nonlocal search_query
+        search_field.value = ""
+        search_query = ""
+        filter_tasks()
+        page.update()
+    
     load_tasks()
     
     return ft.Column([
@@ -124,7 +131,7 @@ def create_tasks_view(page, api, user, on_logout, on_back_to_profile=None):
             content=ft.Column([
                 ft.Row([
                     search_field,
-                    ft.IconButton(icon=ft.Icons.CLEAR, on_click=lambda e: (setattr(search_field, 'value', ""), search_changed(e))),
+                    ft.IconButton(icon=ft.Icons.CLEAR, on_click=clear_search_click),
                     ft.Container(expand=True),
                     ft.ElevatedButton("Add Task", icon=ft.Icons.ADD_TASK, on_click=lambda e: (setattr(add_dialog, 'open', True), page.update()))
                 ]),
